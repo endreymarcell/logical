@@ -1,0 +1,19 @@
+{
+  "name": "logical.ts",
+  "version": "0.1.0",
+  "description": "Logical state management for TypeScript applications",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/endreymarcell/logical.ts.git"
+  },
+  "author": "Marcell Endrey <endrey.marcell@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/endreymarcell/logical.ts/issues"
+  },
+  "homepage": "https://github.com/endreymarcell/logical.ts#readme"
+}

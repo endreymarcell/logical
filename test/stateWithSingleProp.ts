@@ -1,4 +1,4 @@
-import { Logic, Store } from '../src';
+import { Transitions, Store } from '../src';
 
 type State = {
     count: number;
@@ -11,24 +11,26 @@ type AppEvents = {
     multiplyThenAdd: (mult: number, add: number) => void;
 };
 
+const transitions: Transitions<State, AppEvents> = {
+    increase: amount => state => void (state.count += amount),
+    decrease: amount => state => void (state.count -= amount),
+    reset: () => state => void (state.count = 0),
+    multiplyThenAdd: (mult, add) => state => void (state.count = state.count * mult + add),
+};
+
+const initialState: State = {
+    count: 0,
+};
+
 describe('store', () => {
     test('works', () => {
-        const logic: Logic<State, AppEvents> = {
-            increase: amount => state => void (state.count += amount),
-            decrease: amount => state => void (state.count -= amount),
-            reset: () => state => void (state.count = 0),
-            multiplyThenAdd: (mult, add) => state => void (state.count = state.count * mult + add),
-        };
-        const initialState: State = {
-            count: 0,
-        };
-        const store = new Store(initialState, logic);
+        const store = new Store(initialState, transitions);
 
         store.dispatch.increase(10);
         expect(store.get().count).toBe(10);
 
-        store.dispatch.decrease(5);
-        expect(store.get().count).toBe(5);
+        store.dispatch.decrease(3);
+        expect(store.get().count).toBe(7);
 
         store.dispatch.reset();
         expect(store.get().count).toBe(0);

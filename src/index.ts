@@ -1,43 +1,61 @@
 import produce from 'immer';
 
+type BaseState = {
+    [prop: string]: any;
+};
+
 type BaseAppEvents = {
     [eventName: string]: (...args: any) => void;
 };
 
-export type Logic<State, AppEvents extends BaseAppEvents> = {
+export type Transitions<State extends BaseState, AppEvents extends BaseAppEvents> = {
     [eventName in keyof AppEvents]: (...payload: Parameters<AppEvents[eventName]>) => (state: State) => void;
 };
 
-type InternalLogic<AppEvents extends BaseAppEvents> = {
+type EventHandlers<AppEvents extends BaseAppEvents> = {
     [eventName in keyof AppEvents]: (...payload: Parameters<AppEvents[eventName]>) => void;
 };
 
-export class Store<State, AppEvents extends BaseAppEvents> {
-    private state: State;
-    private readonly internalLogic: InternalLogic<AppEvents>;
+type Subscriber<State extends BaseState> = (value: State) => void;
 
-    constructor(initialState: State, logic: Logic<State, AppEvents>) {
+export class Store<State extends BaseState, AppEvents extends BaseAppEvents> {
+    private state: State;
+    private readonly eventHandlers: EventHandlers<AppEvents>;
+    private subscribers: Subscriber<State>[];
+
+    constructor(initialState: State, transitions: Transitions<State, AppEvents>) {
         this.state = initialState;
-        this.internalLogic = this.getInternalLogic(logic);
+        this.eventHandlers = this.getEventHandlers(transitions);
+        this.subscribers = [];
     }
 
-    private getInternalLogic(logic: Logic<State, AppEvents>): InternalLogic<AppEvents> {
-        const tmp = {} as InternalLogic<AppEvents>;
-        for (const eventName of Object.keys(logic)) {
+    private getEventHandlers(transitions: Transitions<State, AppEvents>): EventHandlers<AppEvents> {
+        const tmp = {} as EventHandlers<AppEvents>;
+        for (const eventName of Object.keys(transitions)) {
             const typedEventName = eventName as keyof AppEvents;
-            const eventHandler = logic[typedEventName];
+            const eventHandler = transitions[typedEventName];
             tmp[typedEventName] = ((...payload: Parameters<typeof eventHandler>) => {
                 this.state = produce(this.state, eventHandler(...(payload as any)));
+                this.broadcast();
             }) as any;
         }
-        return tmp as InternalLogic<AppEvents>;
+        return tmp as EventHandlers<AppEvents>;
     }
 
     get dispatch() {
-        return this.internalLogic;
+        return this.eventHandlers;
     }
 
     get() {
         return this.state;
+    }
+
+    subscribe(subscriber: Subscriber<State>) {
+        this.subscribers.push(subscriber);
+        subscriber(this.state);
+    }
+
+    private broadcast() {
+        this.subscribers.forEach(subscriber => subscriber(this.state));
     }
 }

@@ -1,6 +1,6 @@
 import type { BaseAppEvents } from './transitions';
 
-type SideEffect<Args extends Array<any>, ReturnType, AppEvents> = {
+export type SideEffect<Args extends Array<any>, ReturnType, AppEvents> = {
     name: string;
     execute: (...payload: Args) => Promise<ReturnType>;
     args: Args;

@@ -1,4 +1,4 @@
-import { Store, Transitions } from '../src';
+import { StateStore, Transitions } from '../src';
 
 type State = {
     value: string;
@@ -15,7 +15,7 @@ const transitions: Transitions<State, AppEvents> = {
 describe('subscription', () => {
     test('single subscriber', () => {
         // given
-        const store = new Store({ value: '' }, transitions);
+        const store = new StateStore({ value: '' }, transitions);
         const sub = jest.fn();
         store.subscribe(sub);
 
@@ -28,7 +28,7 @@ describe('subscription', () => {
 
     test('multiple subscribers', () => {
         // given
-        const store = new Store({ value: '' }, transitions);
+        const store = new StateStore({ value: '' }, transitions);
         const sub1 = jest.fn();
         const sub2 = jest.fn();
         store.subscribe(sub1);

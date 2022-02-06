@@ -1,4 +1,4 @@
-import { Transitions, Store } from '../src';
+import { Transitions, StateStore } from '../src';
 
 type State = {
     count: number;
@@ -33,7 +33,7 @@ const transitions: Transitions<State, AppEvents> = {
 
 describe('state with multiple properties', () => {
     test('initial state', () => {
-        const store = new Store(
+        const store = new StateStore(
             {
                 count: 0,
                 numChanges: 0,
@@ -44,7 +44,7 @@ describe('state with multiple properties', () => {
     });
 
     test('multiple props can change', () => {
-        const store = new Store(
+        const store = new StateStore(
             {
                 count: 0,
                 numChanges: 0,

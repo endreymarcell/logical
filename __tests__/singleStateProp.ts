@@ -1,4 +1,4 @@
-import { Transitions, Store } from '../src';
+import { Transitions, StateStore } from '../src';
 
 type State = {
     count: number;
@@ -20,12 +20,12 @@ const transitions: Transitions<State, AppEvents> = {
 
 describe('state with single prop', () => {
     test('initial state', () => {
-        const store = new Store({ count: 99 }, transitions);
+        const store = new StateStore({ count: 99 }, transitions);
         expect(store.get().count).toBe(99);
     });
 
     test('events with single payload', () => {
-        const store = new Store({ count: 0 }, transitions);
+        const store = new StateStore({ count: 0 }, transitions);
 
         store.dispatch.increase(10);
         expect(store.get().count).toBe(10);
@@ -35,14 +35,14 @@ describe('state with single prop', () => {
     });
 
     test('event with no payload', () => {
-        const store = new Store({ count: 10 }, transitions);
+        const store = new StateStore({ count: 10 }, transitions);
 
         store.dispatch.reset();
         expect(store.get().count).toBe(0);
     });
 
     test('event with multipart payload', () => {
-        const store = new Store({ count: 2 }, transitions);
+        const store = new StateStore({ count: 2 }, transitions);
 
         store.dispatch.multiplyThenAdd(3, 1);
         expect(store.get().count).toBe(7);

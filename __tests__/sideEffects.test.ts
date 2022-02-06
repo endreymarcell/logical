@@ -1,4 +1,4 @@
-import { createSideEffect, Store, Transitions } from '../src';
+import { createSideEffect, StateStore, Transitions } from '../src';
 
 type State = {
     value: string;
@@ -37,13 +37,13 @@ const sideEffects = {
 
 describe('side effects', () => {
     test('success action', async () => {
-        const store = new Store({ value: 'initial' }, transitions);
+        const store = new StateStore({ value: 'initial' }, transitions);
         await store.dispatch.successfulSideEffect();
         expect(store.get().value).toBe('success');
     });
 
     test('failure action', async () => {
-        const store = new Store({ value: 'initial' }, transitions);
+        const store = new StateStore({ value: 'initial' }, transitions);
         await store.dispatch.failingSideEffect();
         expect(store.get().value).toBe('error');
     });

@@ -1,4 +1,5 @@
 import produce from 'immer';
+import { BaseStore } from './BaseStore';
 
 type BaseState = {
     [prop: string]: any;
@@ -15,8 +16,6 @@ export type Transitions<State extends BaseState, AppEvents extends BaseAppEvents
 type EventHandlers<AppEvents extends BaseAppEvents> = {
     [eventName in keyof AppEvents]: (...payload: Parameters<AppEvents[eventName]>) => void;
 };
-
-type Subscriber<State extends BaseState> = (value: State) => void;
 
 type SideEffect<Args extends Array<any>, ReturnType, AppEvents> = {
     name: string;
@@ -43,18 +42,15 @@ export function createSideEffect<Args extends Array<any>, ReturnType, AppEvents>
 
 type SideEffectList<AppEvents extends BaseAppEvents> = Array<SideEffect<any, any, AppEvents>>;
 
-export class Store<State extends BaseState, AppEvents extends BaseAppEvents> {
-    private state: State;
+export class StateStore<State extends BaseState, AppEvents extends BaseAppEvents> extends BaseStore<State> {
     private readonly copyOfTransitions: Transitions<State, AppEvents>;
     private readonly eventHandlers: EventHandlers<AppEvents>;
-    private subscribers: Subscriber<State>[];
     private readonly scheduledSideEffects: SideEffectList<AppEvents>;
 
     constructor(initialState: State, transitions: Transitions<State, AppEvents>) {
-        this.state = initialState;
+        super(initialState);
         this.copyOfTransitions = transitions;
         this.eventHandlers = this.getEventHandlers(transitions);
-        this.subscribers = [];
         this.scheduledSideEffects = [];
     }
 
@@ -65,7 +61,7 @@ export class Store<State extends BaseState, AppEvents extends BaseAppEvents> {
             const eventHandler = transitions[typedEventName];
             tmp[typedEventName] = ((...payload: Parameters<typeof eventHandler>) => {
                 const sideEffectList: SideEffectList<AppEvents> = [];
-                this.state = produce(this.state, draftState => {
+                this.value = produce(this.value, draftState => {
                     const updaterForGivenPayload = eventHandler(...(payload as any));
                     sideEffectList.push(updaterForGivenPayload(draftState as any) as any);
                 });
@@ -80,19 +76,6 @@ export class Store<State extends BaseState, AppEvents extends BaseAppEvents> {
 
     get dispatch() {
         return this.eventHandlers;
-    }
-
-    get() {
-        return this.state;
-    }
-
-    subscribe(subscriber: Subscriber<State>) {
-        this.subscribers.push(subscriber);
-        subscriber(this.state);
-    }
-
-    private broadcast() {
-        this.subscribers.forEach(subscriber => subscriber(this.state));
     }
 
     private getEventNameByHandler(handler: Function) {

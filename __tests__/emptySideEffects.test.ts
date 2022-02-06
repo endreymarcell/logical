@@ -1,4 +1,4 @@
-import { createSideEffect, Store, Transitions } from '../src';
+import { createSideEffect, StateStore, Transitions } from '../src';
 
 type State = {
     value: string;
@@ -35,13 +35,13 @@ const sideEffects = {
 
 describe('side effects', () => {
     test('just set the value', () => {
-        const store = new Store({ value: 'initial' }, transitions);
+        const store = new StateStore({ value: 'initial' }, transitions);
         store.dispatch.setValuePurely('set-from-test');
         expect(store.get().value).toBe('set-from-test');
     });
 
     test('set the value with side effect', () => {
-        const store = new Store({ value: 'initial' }, transitions);
+        const store = new StateStore({ value: 'initial' }, transitions);
         const consoleLogMock = jest.spyOn(console, 'log').mockImplementation();
         store.dispatch.setValueWithSideEffect('set-from-test');
         expect(store.get().value).toBe('set-from-test');
@@ -50,7 +50,7 @@ describe('side effects', () => {
     });
 
     test('side effect only', () => {
-        const store = new Store({ value: 'initial' }, transitions);
+        const store = new StateStore({ value: 'initial' }, transitions);
         const consoleLogMock = jest.spyOn(console, 'log').mockImplementation();
         store.dispatch.onlySideEffect('set-from-test');
         expect(store.get().value).toBe('initial');

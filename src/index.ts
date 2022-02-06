@@ -103,6 +103,12 @@ export class Store<State extends BaseState, AppEvents extends BaseAppEvents> {
         return [...this.scheduledSideEffects];
     }
 
+    private getEventNameByHandler(handler: Function) {
+        return Object.keys(this.copyOfTransitions).find(
+            key => this.copyOfTransitions[key] === (handler as any),
+        );
+    }
+
     public executeSideEffects() {
         while (this.scheduledSideEffects.length > 0) {
             const sideEffect = this.scheduledSideEffects.shift();
@@ -110,17 +116,13 @@ export class Store<State extends BaseState, AppEvents extends BaseAppEvents> {
                 sideEffect
                     .execute(...sideEffect.args)
                     .then(result => {
-                        const successEventName = Object.keys(this.copyOfTransitions).find(
-                            key => this.copyOfTransitions[key] === (sideEffect.successEvent as any),
-                        );
+                        const successEventName = this.getEventNameByHandler(sideEffect.successEvent);
                         if (successEventName !== undefined) {
                             (this.eventHandlers[successEventName] as any)(result);
                         }
                     })
                     .catch(error => {
-                        const failureEventName = Object.keys(this.copyOfTransitions).find(
-                            key => this.copyOfTransitions[key] === (sideEffect.failureEvent as any),
-                        );
+                        const failureEventName = this.getEventNameByHandler(sideEffect.failureEvent);
                         if (failureEventName !== undefined) {
                             (this.eventHandlers[failureEventName] as any)(error);
                         }

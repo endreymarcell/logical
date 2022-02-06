@@ -71,7 +71,7 @@ export class Store<State extends BaseState, AppEvents extends BaseAppEvents> {
                 });
                 this.broadcast();
                 if (sideEffectList.length > 0) {
-                    this.scheduleSideEffects(sideEffectList);
+                    return this.executeSideEffects(sideEffectList);
                 }
             }) as any;
         }
@@ -95,38 +95,32 @@ export class Store<State extends BaseState, AppEvents extends BaseAppEvents> {
         this.subscribers.forEach(subscriber => subscriber(this.state));
     }
 
-    private scheduleSideEffects(sideEffectList: SideEffectList<AppEvents>) {
-        this.scheduledSideEffects.push(...sideEffectList);
-    }
-
-    get TEST__scheduledSideEffects() {
-        return [...this.scheduledSideEffects];
-    }
-
     private getEventNameByHandler(handler: Function) {
         return Object.keys(this.copyOfTransitions).find(
             key => this.copyOfTransitions[key] === (handler as any),
         );
     }
 
-    public executeSideEffects(): Promise<void> {
+    private executeSideEffects(sideEffects: SideEffectList<AppEvents>): Promise<void> {
         return Promise.allSettled(
-            this.scheduledSideEffects.map(sideEffect =>
-                sideEffect
-                    .execute(...sideEffect.args)
-                    .then(result => {
-                        const successEventName = this.getEventNameByHandler(sideEffect.successEvent);
-                        if (successEventName !== undefined) {
-                            (this.eventHandlers[successEventName] as any)(result);
-                        }
-                    })
-                    .catch(error => {
-                        const failureEventName = this.getEventNameByHandler(sideEffect.failureEvent);
-                        if (failureEventName !== undefined) {
-                            (this.eventHandlers[failureEventName] as any)(error);
-                        }
-                    }),
-            ),
+            sideEffects
+                .filter(sideEffect => sideEffect !== undefined)
+                .map(sideEffect =>
+                    sideEffect
+                        .execute(...sideEffect.args)
+                        .then(result => {
+                            const successEventName = this.getEventNameByHandler(sideEffect.successEvent);
+                            if (successEventName !== undefined) {
+                                (this.eventHandlers[successEventName] as any)(result);
+                            }
+                        })
+                        .catch(error => {
+                            const failureEventName = this.getEventNameByHandler(sideEffect.failureEvent);
+                            if (failureEventName !== undefined) {
+                                (this.eventHandlers[failureEventName] as any)(error);
+                            }
+                        }),
+                ),
         ).then();
     }
 }

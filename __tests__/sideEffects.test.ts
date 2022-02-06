@@ -39,17 +39,14 @@ describe('side effects', () => {
     test('success action', async () => {
         const store = new Store({ value: 'initial' }, transitions);
         store.dispatch.successfulSideEffect();
-        store.executeSideEffects();
-        await Promise.resolve();
+        await store.executeSideEffects();
         expect(store.get().value).toBe('success');
     });
 
     test('failure action', async () => {
         const store = new Store({ value: 'initial' }, transitions);
         store.dispatch.failingSideEffect();
-        store.executeSideEffects();
-        await Promise.resolve();
-        await Promise.resolve();
+        await store.executeSideEffects();
         expect(store.get().value).toBe('error');
     });
 });

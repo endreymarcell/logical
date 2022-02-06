@@ -109,10 +109,9 @@ export class Store<State extends BaseState, AppEvents extends BaseAppEvents> {
         );
     }
 
-    public executeSideEffects() {
-        while (this.scheduledSideEffects.length > 0) {
-            const sideEffect = this.scheduledSideEffects.shift();
-            if (sideEffect !== undefined) {
+    public executeSideEffects(): Promise<void> {
+        return Promise.allSettled(
+            this.scheduledSideEffects.map(sideEffect =>
                 sideEffect
                     .execute(...sideEffect.args)
                     .then(result => {
@@ -126,8 +125,8 @@ export class Store<State extends BaseState, AppEvents extends BaseAppEvents> {
                         if (failureEventName !== undefined) {
                             (this.eventHandlers[failureEventName] as any)(error);
                         }
-                    });
-            }
-        }
+                    }),
+            ),
+        ).then();
     }
 }

@@ -14,13 +14,11 @@ type EventHandlers<AppEvents extends BaseAppEvents> = {
 export class StateStore<State extends BaseState, AppEvents extends BaseAppEvents> extends BaseStore<State> {
     private readonly copyOfTransitions: Transitions<State, AppEvents>;
     private readonly eventHandlers: EventHandlers<AppEvents>;
-    private readonly scheduledSideEffects: SideEffectList<AppEvents>;
 
     constructor(initialState: State, transitions: Transitions<State, AppEvents>) {
         super(initialState);
         this.copyOfTransitions = transitions;
         this.eventHandlers = this.getEventHandlers(transitions);
-        this.scheduledSideEffects = [];
     }
 
     private getEventHandlers(transitions: Transitions<State, AppEvents>): EventHandlers<AppEvents> {

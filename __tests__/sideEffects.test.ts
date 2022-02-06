@@ -1,4 +1,4 @@
-import { createSideEffect, StateStore } from '../src';
+import { createSideEffectCreator, StateStore } from '../src';
 import type { Transitions } from '../src';
 
 type State = {
@@ -22,13 +22,13 @@ const transitions: Transitions<State, AppEvents> = {
 };
 
 const sideEffects = {
-    resolveWithSuccessString: createSideEffect<[], string, AppEvents>(
+    resolveWithSuccessString: createSideEffectCreator<[], string, AppEvents>(
         'resolveWithSuccessString',
         () => Promise.resolve('success'),
         transitions.success,
         transitions.failure,
     ),
-    rejectWithError: createSideEffect<[], void, AppEvents>(
+    rejectWithError: createSideEffectCreator<[], void, AppEvents>(
         'rejectWithError',
         () => Promise.reject('error'),
         transitions.success,

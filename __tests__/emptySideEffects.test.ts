@@ -1,4 +1,4 @@
-import { createSideEffect, StateStore } from '../src';
+import { createSideEffectCreator, StateStore } from '../src';
 import type { Transitions } from '../src';
 
 type State = {
@@ -23,7 +23,7 @@ const transitions: Transitions<State, AppEvents> = {
 };
 
 const sideEffects = {
-    consoleLogFoo: createSideEffect<[], void, AppEvents>(
+    consoleLogFoo: createSideEffectCreator<[], void, AppEvents>(
         'consoleLogFoo',
         () => {
             console.log('foo');

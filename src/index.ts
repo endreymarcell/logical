@@ -1,3 +1,3 @@
 export { StateStore } from './StateStore';
-export { createSideEffect } from './sideEffects';
+export { createSideEffectCreator } from './sideEffects';
 export type { Transitions } from './transitions';

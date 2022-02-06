@@ -32,7 +32,10 @@ export class StateStore<State extends BaseState, AppEvents extends BaseAppEvents
                 const sideEffectList: SideEffectList<AppEvents> = [];
                 this.value = produce(this.value, draftState => {
                     const updaterForGivenPayload = eventHandler(...(payload as any));
-                    sideEffectList.push(updaterForGivenPayload(draftState as any) as any);
+                    const maybeSideEffect = updaterForGivenPayload(draftState as any);
+                    if (maybeSideEffect !== undefined) {
+                        sideEffectList.push(maybeSideEffect);
+                    }
                 });
                 this.broadcast();
                 if (sideEffectList.length > 0) {

@@ -24,7 +24,10 @@ const transitions: Transitions<State, AppEvents> = {
 const sideEffects = {
     consoleLogFoo: createSideEffect<[], void, AppEvents>(
         'consoleLogFoo',
-        () => Promise.resolve(),
+        () => {
+            console.log('foo');
+            return Promise.resolve();
+        },
         transitions.zero,
         transitions.zero,
     ),
@@ -39,15 +42,19 @@ describe('side effects', () => {
 
     test('set the value with side effect', () => {
         const store = new Store({ value: 'initial' }, transitions);
+        const consoleLogMock = jest.spyOn(console, 'log').mockImplementation();
         store.dispatch.setValueWithSideEffect('set-from-test');
         expect(store.get().value).toBe('set-from-test');
-        expect(store.TEST__scheduledSideEffects).toEqual([sideEffects.consoleLogFoo()]);
+        expect(consoleLogMock).toBeCalledWith('foo');
+        consoleLogMock.mockRestore();
     });
 
     test('side effect only', () => {
         const store = new Store({ value: 'initial' }, transitions);
+        const consoleLogMock = jest.spyOn(console, 'log').mockImplementation();
         store.dispatch.onlySideEffect('set-from-test');
         expect(store.get().value).toBe('initial');
-        expect(store.TEST__scheduledSideEffects).toEqual([sideEffects.consoleLogFoo()]);
+        expect(consoleLogMock).toBeCalledWith('foo');
+        consoleLogMock.mockRestore();
     });
 });

@@ -45,12 +45,14 @@ type SideEffectList<AppEvents extends BaseAppEvents> = Array<SideEffect<any, any
 
 export class Store<State extends BaseState, AppEvents extends BaseAppEvents> {
     private state: State;
+    private readonly copyOfTransitions: Transitions<State, AppEvents>;
     private readonly eventHandlers: EventHandlers<AppEvents>;
     private subscribers: Subscriber<State>[];
-    private scheduledSideEffects: SideEffectList<AppEvents>;
+    private readonly scheduledSideEffects: SideEffectList<AppEvents>;
 
     constructor(initialState: State, transitions: Transitions<State, AppEvents>) {
         this.state = initialState;
+        this.copyOfTransitions = transitions;
         this.eventHandlers = this.getEventHandlers(transitions);
         this.subscribers = [];
         this.scheduledSideEffects = [];
@@ -101,14 +103,28 @@ export class Store<State extends BaseState, AppEvents extends BaseAppEvents> {
         return [...this.scheduledSideEffects];
     }
 
-    private executeSideEffects() {
+    public executeSideEffects() {
         while (this.scheduledSideEffects.length > 0) {
             const sideEffect = this.scheduledSideEffects.shift();
             if (sideEffect !== undefined) {
                 sideEffect
                     .execute(...sideEffect.args)
-                    .then(result => (this.dispatch[sideEffect.successEvent as any] as any)(result))
-                    .catch(error => (this.dispatch[sideEffect.failureEvent as any] as any)(error));
+                    .then(result => {
+                        const successEventName = Object.keys(this.copyOfTransitions).find(
+                            key => this.copyOfTransitions[key] === (sideEffect.successEvent as any),
+                        );
+                        if (successEventName !== undefined) {
+                            (this.eventHandlers[successEventName] as any)(result);
+                        }
+                    })
+                    .catch(error => {
+                        const failureEventName = Object.keys(this.copyOfTransitions).find(
+                            key => this.copyOfTransitions[key] === (sideEffect.failureEvent as any),
+                        );
+                        if (failureEventName !== undefined) {
+                            (this.eventHandlers[failureEventName] as any)(error);
+                        }
+                    });
             }
         }
     }

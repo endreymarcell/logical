@@ -24,7 +24,7 @@ const transitions: Transitions<State, AppEvents> = {
 const sideEffects = {
     consoleLogFoo: createSideEffect<[], void, AppEvents>(
         'consoleLogFoo',
-        () => new Promise(resolve => resolve()),
+        () => Promise.resolve(),
         transitions.zero,
         transitions.zero,
     ),

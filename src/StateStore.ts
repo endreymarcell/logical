@@ -21,16 +21,22 @@ export class StateStore<State extends BaseState, AppEvents extends BaseAppEvents
         this.eventHandlers = this.getEventHandlers(transitions);
     }
 
+    // For every transition definition `payload? => state => sideEffect?`
+    // create an event handler `payload? => void`, which
+    // 1. updates the state of the store using Immer,
+    // 2. broadcasts this new state to the store's subscribers, and
+    // 3. executes the transition's side effects (if any).
     private getEventHandlers(transitions: Transitions<State, AppEvents>): EventHandlers<AppEvents> {
-        const tmp = {} as EventHandlers<AppEvents>;
+        const eventHandlers = {} as EventHandlers<AppEvents>;
         for (const eventName of Object.keys(transitions)) {
+            // Workaround for the problem that `typeof Object.keys(foo) !== keyof foo`
             const typedEventName = eventName as keyof AppEvents;
-            const eventHandler = transitions[typedEventName];
-            tmp[typedEventName] = ((...payload: Parameters<typeof eventHandler>) => {
+            const transition = transitions[typedEventName];
+            eventHandlers[typedEventName] = (...payload: Parameters<AppEvents[typeof typedEventName]>) => {
                 const sideEffectList: SideEffectList<AppEvents> = [];
                 this.value = produce(this.value, draftState => {
-                    const updaterForGivenPayload = eventHandler(...(payload as any));
-                    const maybeSideEffect = updaterForGivenPayload(draftState as any);
+                    const updaterForGivenPayload = transition(...payload);
+                    const maybeSideEffect = updaterForGivenPayload(draftState as State);
                     if (maybeSideEffect !== undefined) {
                         sideEffectList.push(maybeSideEffect);
                     }
@@ -39,9 +45,9 @@ export class StateStore<State extends BaseState, AppEvents extends BaseAppEvents
                 if (sideEffectList.length > 0) {
                     return this.executeSideEffects(sideEffectList);
                 }
-            }) as any;
+            };
         }
-        return tmp as EventHandlers<AppEvents>;
+        return eventHandlers as EventHandlers<AppEvents>;
     }
 
     get dispatch() {

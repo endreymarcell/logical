@@ -1,4 +1,5 @@
-import { createSideEffect, StateStore, Transitions } from '../src';
+import { createSideEffect, StateStore } from '../src';
+import type { Transitions } from '../src';
 
 type State = {
     value: string;

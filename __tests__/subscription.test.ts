@@ -1,4 +1,5 @@
-import { StateStore, Transitions } from '../src';
+import { StateStore } from '../src';
+import type { Transitions } from '../src';
 
 type State = {
     value: string;

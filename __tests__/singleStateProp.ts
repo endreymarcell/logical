@@ -1,4 +1,5 @@
-import { Transitions, StateStore } from '../src';
+import { StateStore } from '../src';
+import type { Transitions } from '../src';
 
 type State = {
     count: number;

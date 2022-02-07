@@ -22,17 +22,19 @@ const transitions: Transitions<State, AppEvents> = {
 };
 
 const sideEffects = {
-    resolveWithSuccessString: createSideEffectCreator<[], string, AppEvents>(
+    resolveWithSuccessString: createSideEffectCreator<[], string, State, AppEvents>(
         'resolveWithSuccessString',
         () => Promise.resolve('success'),
         transitions.success,
         transitions.failure,
+        transitions,
     ),
-    rejectWithError: createSideEffectCreator<[], void, AppEvents>(
+    rejectWithError: createSideEffectCreator<[], void, State, AppEvents>(
         'rejectWithError',
         () => Promise.reject('error'),
         transitions.success,
         transitions.failure,
+        transitions,
     ),
 };
 

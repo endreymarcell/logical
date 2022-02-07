@@ -12,12 +12,10 @@ type EventHandlers<AppEvents extends BaseAppEvents> = {
 };
 
 export class StateStore<State extends BaseState, AppEvents extends BaseAppEvents> extends BaseStore<State> {
-    private readonly copyOfTransitions: Transitions<State, AppEvents>;
     private readonly eventHandlers: EventHandlers<AppEvents>;
 
     constructor(initialState: State, transitions: Transitions<State, AppEvents>) {
         super(initialState);
-        this.copyOfTransitions = transitions;
         this.eventHandlers = this.getEventHandlers(transitions);
     }
 
@@ -62,10 +60,6 @@ export class StateStore<State extends BaseState, AppEvents extends BaseAppEvents
         return this.eventHandlers;
     }
 
-    private getEventNameByHandler(handler: Transitions<State, AppEvents>[keyof AppEvents]) {
-        return Object.keys(this.copyOfTransitions).find(key => this.copyOfTransitions[key] === handler);
-    }
-
     private executeSideEffects(sideEffects: SideEffectList<AppEvents>): Promise<void> {
         return Promise.allSettled(
             sideEffects
@@ -74,15 +68,13 @@ export class StateStore<State extends BaseState, AppEvents extends BaseAppEvents
                     sideEffect
                         .execute(...sideEffect.args)
                         .then(result => {
-                            const successEventName = this.getEventNameByHandler(sideEffect.successEvent);
-                            if (successEventName !== undefined) {
-                                (this.eventHandlers[successEventName] as any)(result);
+                            if (sideEffect.successEventName !== undefined) {
+                                (this.eventHandlers[sideEffect.successEventName] as any)(result);
                             }
                         })
                         .catch(error => {
-                            const failureEventName = this.getEventNameByHandler(sideEffect.failureEvent);
-                            if (failureEventName !== undefined) {
-                                (this.eventHandlers[failureEventName] as any)(error);
+                            if (sideEffect.failureEventName !== undefined) {
+                                (this.eventHandlers[sideEffect.failureEventName] as any)(error);
                             }
                         }),
                 ),

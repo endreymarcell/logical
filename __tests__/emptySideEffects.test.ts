@@ -23,7 +23,7 @@ const transitions: Transitions<State, AppEvents> = {
 };
 
 const sideEffects = {
-    consoleLogFoo: createSideEffectCreator<[], void, AppEvents>(
+    consoleLogFoo: createSideEffectCreator<[], void, State, AppEvents>(
         'consoleLogFoo',
         () => {
             console.log('foo');
@@ -31,6 +31,7 @@ const sideEffects = {
         },
         transitions.zero,
         transitions.zero,
+        transitions,
     ),
 };
 

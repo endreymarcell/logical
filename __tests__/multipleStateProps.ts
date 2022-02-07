@@ -1,19 +1,11 @@
-import { StateStore } from '../src';
-import type { Transitions } from '../src';
+import { createTransitions, StateStore } from '../src';
 
 type State = {
     count: number;
     numChanges: number;
 };
 
-type AppEvents = {
-    increase: (amount: number) => void;
-    decrease: (amount: number) => void;
-    reset: () => void;
-    multiplyThenAdd: (mult: number, add: number) => void;
-};
-
-const transitions: Transitions<State, AppEvents> = {
+const transitions = createTransitions<State>({
     increase: amount => state => {
         state.count += amount;
         state.numChanges++;
@@ -30,7 +22,7 @@ const transitions: Transitions<State, AppEvents> = {
         state.count = state.count * mult + add;
         state.numChanges++;
     },
-};
+});
 
 describe('state with multiple properties', () => {
     test('initial state', () => {

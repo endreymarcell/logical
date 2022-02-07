@@ -1,26 +1,16 @@
-import { createSideEffectCreator, StateStore } from '../src';
-import type { Transitions } from '../src';
-import { createSideEffects } from '../src/sideEffects';
+import { createSideEffects, createTransitions, StateStore } from '../src';
 
 type State = {
     value: string;
 };
 
-type AppEvents = {
-    successfulSideEffect: () => string;
-    failingSideEffect: () => string;
-    success: (result: string) => void;
-    failure: (error: any) => void;
-    zero: () => void;
-};
-
-const transitions: Transitions<State, AppEvents> = {
+const transitions = createTransitions<State>({
     successfulSideEffect: () => () => sideEffects.resolveWithSuccessString(),
     failingSideEffect: () => () => sideEffects.rejectWithError(),
     success: (result: string) => state => void (state.value = result),
     failure: (error: any) => state => void (state.value = error),
     zero: () => () => {},
-};
+});
 
 const sideEffects = createSideEffects(transitions, {
     resolveWithSuccessString: [() => Promise.resolve('success'), transitions.success, transitions.failure],

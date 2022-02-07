@@ -1,23 +1,15 @@
-import { StateStore } from '../src';
-import type { Transitions } from '../src';
+import { createTransitions, StateStore } from '../src';
 
 type State = {
     count: number;
 };
 
-type AppEvents = {
-    increase: (amount: number) => void;
-    decrease: (amount: number) => void;
-    reset: () => void;
-    multiplyThenAdd: (mult: number, add: number) => void;
-};
-
-const transitions: Transitions<State, AppEvents> = {
+const transitions = createTransitions<State>({
     increase: amount => state => void (state.count += amount),
     decrease: amount => state => void (state.count -= amount),
     reset: () => state => void (state.count = 0),
     multiplyThenAdd: (mult, add) => state => void (state.count = state.count * mult + add),
-};
+});
 
 describe('state with single prop', () => {
     test('initial state', () => {

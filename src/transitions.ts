@@ -25,3 +25,15 @@ type TransitionTypeForEventName<
 export type Transitions<State extends BaseState, AppEvents extends BaseAppEvents> = {
     [eventName in keyof AppEvents]: TransitionTypeForEventName<State, AppEvents, eventName>;
 };
+
+type TransitionInput<State extends BaseState> = (...args: Array<any>) => (state: State) => any;
+
+export function createTransitions<State extends BaseState>(inputs: {
+    [key: string]: TransitionInput<State>;
+}): { [key in keyof typeof inputs]: TransitionInput<State> } {
+    // @ts-ignore
+    return {
+        ...inputs,
+        // @ts-ignore
+    } as Transitions<State, keyof typeof inputs>;
+}

@@ -1,19 +1,10 @@
-import { createSideEffectCreator, StateStore } from '../src';
-import type { Transitions } from '../src';
-import { createSideEffects } from '../src/sideEffects';
+import { createSideEffects, createTransitions, StateStore } from '../src';
 
 type State = {
     value: string;
 };
 
-type AppEvents = {
-    setValuePurely: (value: string) => void;
-    setValueWithSideEffect: (value: string) => any;
-    onlySideEffect: (value: string) => any;
-    zero: () => void;
-};
-
-const transitions: Transitions<State, AppEvents> = {
+const transitions = createTransitions<State>({
     setValuePurely: value => state => void (state.value = value),
     setValueWithSideEffect: value => state => {
         state.value = value;
@@ -21,7 +12,7 @@ const transitions: Transitions<State, AppEvents> = {
     },
     onlySideEffect: () => () => sideEffects.consoleLogFoo(),
     zero: () => () => {},
-};
+});
 
 const sideEffects = createSideEffects(transitions, {
     consoleLogFoo: [

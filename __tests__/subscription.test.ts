@@ -1,17 +1,12 @@
-import { StateStore } from '../src';
-import type { Transitions } from '../src';
+import { createTransitions, StateStore } from '../src';
 
 type State = {
     value: string;
 };
 
-type AppEvents = {
-    set: (value: string) => void;
-};
-
-const transitions: Transitions<State, AppEvents> = {
+const transitions = createTransitions<State>({
     set: value => state => void (state.value = value),
-};
+});
 
 describe('subscription', () => {
     test('single subscriber', () => {

@@ -1,5 +1,5 @@
 import { BaseState } from './StateStore';
-import { SideEffect } from './sideEffects';
+import { SideEffectThunk } from './sideEffects';
 
 export type BaseAppEvents = {
     [eventName: string]: (...args: any) => any;
@@ -8,7 +8,7 @@ export type BaseAppEvents = {
 type SideEffectTypeForEventName<
     AppEvents extends BaseAppEvents,
     eventName extends keyof AppEvents,
-> = SideEffect<
+> = SideEffectThunk<
     Parameters<ReturnType<ReturnType<AppEvents[eventName]>>>,
     ReturnType<ReturnType<ReturnType<AppEvents[eventName]>>>,
     AppEvents

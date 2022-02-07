@@ -23,13 +23,11 @@ export class StateStore<State extends BaseState, AppEvents extends BaseAppEvents
 
     private getEventHandlers(transitions: Transitions<State, AppEvents>): EventHandlers<AppEvents> {
         const eventHandlers = {} as EventHandlers<AppEvents>;
-        for (const eventName of Object.keys(transitions)) {
-            // Workaround for the problem that `typeof Object.keys(foo) !== keyof foo`
-            const typedEventName = eventName as keyof AppEvents;
-            const transition = transitions[typedEventName];
-            eventHandlers[typedEventName] = this.getEventHandler(typedEventName, transition);
+        // The `as` type cast is required because `Object.keys(foo)` returns string, not `keyof foo`
+        for (const eventName of Object.keys(transitions) as Array<keyof AppEvents>) {
+            eventHandlers[eventName] = this.getEventHandler(eventName, transitions[eventName]);
         }
-        return eventHandlers as EventHandlers<AppEvents>;
+        return eventHandlers;
     }
 
     // For a given transition definition `payload? => state => sideEffect?`
@@ -42,9 +40,12 @@ export class StateStore<State extends BaseState, AppEvents extends BaseAppEvents
         transition: Transitions<State, AppEvents>[typeof eventName],
     ) {
         return (...payload: Parameters<AppEvents[typeof eventName]>) => {
+            // Bind the specific payload to the transition to get a state updater function
+            const updaterForGivenPayload = transition(...payload);
             const sideEffectList: SideEffectList<AppEvents> = [];
+            // Use Immer to produce the new value
             this.value = produce(this.value, draftState => {
-                const updaterForGivenPayload = transition(...payload);
+                // Update the state AND get possible side effect
                 const maybeSideEffect = updaterForGivenPayload(draftState as State);
                 if (maybeSideEffect !== undefined) {
                     sideEffectList.push(maybeSideEffect);
@@ -61,10 +62,8 @@ export class StateStore<State extends BaseState, AppEvents extends BaseAppEvents
         return this.eventHandlers;
     }
 
-    private getEventNameByHandler(handler: Function) {
-        return Object.keys(this.copyOfTransitions).find(
-            key => this.copyOfTransitions[key] === (handler as any),
-        );
+    private getEventNameByHandler(handler: Transitions<State, AppEvents>[keyof AppEvents]) {
+        return Object.keys(this.copyOfTransitions).find(key => this.copyOfTransitions[key] === handler);
     }
 
     private executeSideEffects(sideEffects: SideEffectList<AppEvents>): Promise<void> {

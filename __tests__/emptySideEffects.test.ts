@@ -1,5 +1,6 @@
 import { createSideEffectCreator, StateStore } from '../src';
 import type { Transitions } from '../src';
+import { createSideEffects } from '../src/sideEffects';
 
 type State = {
     value: string;
@@ -22,18 +23,16 @@ const transitions: Transitions<State, AppEvents> = {
     zero: () => () => {},
 };
 
-const sideEffects = {
-    consoleLogFoo: createSideEffectCreator<[], void, State, AppEvents>(
-        'consoleLogFoo',
-        () => {
+const sideEffects = createSideEffects(transitions, {
+    consoleLogFoo: {
+        execute: () => {
             console.log('foo');
             return Promise.resolve();
         },
-        transitions.zero,
-        transitions.zero,
-        transitions,
-    ),
-};
+        successEvent: transitions.zero,
+        failureEvent: transitions.zero,
+    },
+});
 
 describe('side effects', () => {
     test('just set the value', () => {

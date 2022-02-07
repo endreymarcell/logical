@@ -1,5 +1,6 @@
 import { createSideEffectCreator, StateStore } from '../src';
 import type { Transitions } from '../src';
+import { createSideEffects } from '../src/sideEffects';
 
 type State = {
     value: string;
@@ -21,22 +22,18 @@ const transitions: Transitions<State, AppEvents> = {
     zero: () => () => {},
 };
 
-const sideEffects = {
-    resolveWithSuccessString: createSideEffectCreator<[], string, State, AppEvents>(
-        'resolveWithSuccessString',
-        () => Promise.resolve('success'),
-        transitions.success,
-        transitions.failure,
-        transitions,
-    ),
-    rejectWithError: createSideEffectCreator<[], void, State, AppEvents>(
-        'rejectWithError',
-        () => Promise.reject('error'),
-        transitions.success,
-        transitions.failure,
-        transitions,
-    ),
-};
+const sideEffects = createSideEffects(transitions, {
+    resolveWithSuccessString: {
+        execute: () => Promise.resolve('success'),
+        successEvent: transitions.success,
+        failureEvent: transitions.failure,
+    },
+    rejectWithError: {
+        execute: () => Promise.reject('error'),
+        successEvent: transitions.success,
+        failureEvent: transitions.failure,
+    },
+});
 
 describe('side effects', () => {
     test('success action', async () => {

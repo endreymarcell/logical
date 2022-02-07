@@ -1,11 +1,11 @@
 import type { BaseAppEvents, Transitions } from './transitions';
 import { BaseState } from './StateStore';
 
-type SideEffectInput<Args extends Array<any>, ReturnType, AppEvents extends BaseAppEvents> = {
-    execute: (...payload: Args) => Promise<ReturnType>;
-    successEvent: AppEvents[keyof AppEvents];
-    failureEvent: AppEvents[keyof AppEvents];
-};
+type SideEffectInput<Args extends Array<any>, ReturnType, AppEvents extends BaseAppEvents> = [
+    execute: (...payload: Args) => Promise<ReturnType>,
+    successEvent: AppEvents[keyof AppEvents],
+    failureEvent: AppEvents[keyof AppEvents],
+];
 
 function createSideEffect<
     Args extends Array<any>,
@@ -17,12 +17,13 @@ function createSideEffect<
     input: SideEffectInput<Args, ReturnType, any>,
     transitions: Transitions<State, AppEvents>,
 ): SideEffectCreator<Args, ReturnType, AppEvents> {
+    const [execute, successEvent, failureEvent] = input;
     return (...args: Args) => ({
         name,
-        execute: input.execute,
+        execute,
         args,
-        successEventName: getEventNameByHandler(input.successEvent, transitions),
-        failureEventName: getEventNameByHandler(input.failureEvent, transitions),
+        successEventName: getEventNameByHandler(successEvent, transitions),
+        failureEventName: getEventNameByHandler(failureEvent, transitions),
     });
 }
 

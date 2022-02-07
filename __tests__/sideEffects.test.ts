@@ -23,16 +23,8 @@ const transitions: Transitions<State, AppEvents> = {
 };
 
 const sideEffects = createSideEffects(transitions, {
-    resolveWithSuccessString: {
-        execute: () => Promise.resolve('success'),
-        successEvent: transitions.success,
-        failureEvent: transitions.failure,
-    },
-    rejectWithError: {
-        execute: () => Promise.reject('error'),
-        successEvent: transitions.success,
-        failureEvent: transitions.failure,
-    },
+    resolveWithSuccessString: [() => Promise.resolve('success'), transitions.success, transitions.failure],
+    rejectWithError: [() => Promise.reject('error'), transitions.success, transitions.failure],
 });
 
 describe('side effects', () => {

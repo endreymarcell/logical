@@ -24,14 +24,14 @@ const transitions: Transitions<State, AppEvents> = {
 };
 
 const sideEffects = createSideEffects(transitions, {
-    consoleLogFoo: {
-        execute: () => {
+    consoleLogFoo: [
+        () => {
             console.log('foo');
             return Promise.resolve();
         },
-        successEvent: transitions.zero,
-        failureEvent: transitions.zero,
-    },
+        transitions.zero,
+        transitions.zero,
+    ],
 });
 
 describe('side effects', () => {

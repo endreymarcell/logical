@@ -27,7 +27,7 @@ const initialState: State = {
 // (these can take 0, 1, or more arguments, and should return void)
 // and the state transitions that follow them
 // (these look like: payload => state => { modify the state here, do not return anything })
-const transitions = createTransitions<State>({
+const logic = createLogic<State>({
     increase: amount => state => void (state.count += amount),
     decrease: amount => state => void (state.count -= amount),
     reset: () => state => void (state.count = 0),
@@ -38,7 +38,7 @@ const transitions = createTransitions<State>({
 #### Usage
 ```typescript
 // Create your store...
-const store = new Store(initialState, transitions);
+const store = new Store(initialState, logic);
 
 // ...and subscribe to its changed...
 store.subscribe(newValue => console.log(`The latest store value is ${newValue}`));
@@ -77,7 +77,7 @@ const initialState: State = {
 }
 
 // Side effects can be triggered by returing them from transitions...
-const transitions = createTransitions<State>({
+const logic = createLogic<State>({
     fetchValue: () => state => {
         state.status = "pending";
         return sideEffects.fetchValue();
@@ -91,13 +91,13 @@ const transitions = createTransitions<State>({
 
 // ...and need to be defined as functions that take 0, 1, or more arguments, return a Promise,
 // and specify a success and a failure event to be triggered on resolution/rejection.
-const sideEffects = createSideEffects(transitions, {
+const sideEffects = createSideEffects(logic, {
     fetchValue: [
         () => fetch('https://www.randomnumberapi.com/api/v1.0/random/')
             .then(response => response.json())
             .then(results => results[0]),
-        transitions.success,
-        transitions.failure,
+        logic.success,
+        logic.failure,
     ],
 });
 ```

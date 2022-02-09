@@ -36,3 +36,5 @@ export function createTransitions<State extends BaseState>(inputs: {
         ...inputs,
     };
 }
+
+export const createLogic = createTransitions;

@@ -106,8 +106,8 @@ const sideEffects = createSideEffects(logic, {
 
 ```typescript
 const store = new Store(initialState, logic);
-
 console.log(store.get().value);      // 0
+
 await store.dispatch.fetchValue();   // you can await events if they trigger a side-effect
 console.log(store.get().value);      // 42 if I am really lucky
 ```

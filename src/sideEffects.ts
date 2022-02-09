@@ -50,27 +50,6 @@ type SideEffectCreator<Args extends Array<any>, ReturnType, AppEvents extends Ba
     ...args: Args
 ) => SideEffectThunk<Args, ReturnType, AppEvents>;
 
-export function createSideEffectCreator<
-    Args extends Array<any>,
-    ReturnType,
-    State extends BaseState,
-    AppEvents extends BaseAppEvents,
->(
-    name: string,
-    execute: (...payload: Args) => Promise<ReturnType>,
-    successEvent: AppEvents[keyof AppEvents],
-    failureEvent: AppEvents[keyof AppEvents],
-    transitions: Transitions<State, AppEvents>,
-): SideEffectCreator<Args, ReturnType, AppEvents> {
-    return (...args: Args) => ({
-        name,
-        execute,
-        args,
-        successEventName: getEventNameByHandler(successEvent, transitions),
-        failureEventName: getEventNameByHandler(failureEvent, transitions),
-    });
-}
-
 function getEventNameByHandler<State extends BaseState, AppEvents extends BaseAppEvents>(
     handler: Transitions<State, AppEvents>[keyof AppEvents],
     transitions: Transitions<State, AppEvents>,

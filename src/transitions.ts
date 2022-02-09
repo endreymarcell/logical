@@ -34,6 +34,5 @@ export function createTransitions<State extends BaseState>(inputs: {
     // @ts-ignore
     return {
         ...inputs,
-        // @ts-ignore
-    } as Transitions<State, keyof typeof inputs>;
+    };
 }

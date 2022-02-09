@@ -1,6 +1,6 @@
 # logical.ts
 
-logical.ts is a state management library written in TypeScript in which I try to collect the good ideas I've seen in codebases and reproduce only few of the bad ones.  
+__Predictable and Expressive State Management for TypeScript__
 
 The basic pattern is based on [redux](https://redux.js.org/) with [Immer](https://immerjs.github.io/immer/) (so like the [redux-toolkit](https://redux-toolkit.js.org/)). Side-effects mostly resemble [redux-loop](https://redux-loop.js.org/), itself based on [Elm](https://elm-lang.org/), but with a custom layer of helpers originally authored by [@laszlopandy](https://github.com/laszlopandy) (not released publicly). 
 
@@ -17,34 +17,28 @@ The basic pattern is based on [redux](https://redux.js.org/) with [Immer](https:
 type State = {
     count: number;
 }
+
 // ...along with your initial state.
 const initialState: State = {
     count: 0,
 }
 
-// Describe the events that can happen - these are like redux 'actions'...
+// Describe the events that can happen - these are like redux 'actions'
 // (these can take 0, 1, or more arguments, and should return void)
-type AppEvents = {
-    increase: (amount: number) => void;
-    decrease: (amount: number) => void;
-    reset: () => void;
-    multiplyThenAdd: (mult: number, add: number) => void;
-};
-
-// ...and the state transitions that follows them.
-// (These look like: payload => state => <modify the state here, do not return anything>)
-const transitions: Transitions<State, AppEvents> = {
+// and the state transitions that follow them
+// (these look like: payload => state => { modify the state here, do not return anything })
+const transitions = createTransitions<State>({
     increase: amount => state => void (state.count += amount),
     decrease: amount => state => void (state.count -= amount),
     reset: () => state => void (state.count = 0),
     multiplyThenAdd: (mult, add) => state => void (state.count = state.count * mult + add),
-};
+});
 ```
 
 #### Usage
 ```typescript
 // Create your store...
-const store = new Store(initialState, transactions);
+const store = new Store(initialState, transitions);
 
 // ...and subscribe to its changed...
 store.subscribe(newValue => console.log(`The latest store value is ${newValue}`));
@@ -73,41 +67,42 @@ console.log(store.get().count);    // 0
 ```typescript
 // Define your state as usual
 type State = {
-    value: string;
+    value: number;
+    status: "initial" | "pending" | "error";
 }
 
 const initialState: State = {
-    value: "initial",
+    value: 0,
+    status: "initia",
 }
 
 // Side effects can be triggered by returing them from transitions...
-type AppEvents = {
-    setValuePurely: (value: string) => void;
-    setValueWithSideEffect: (value: string) => any;    // TODO
-    onlySideEffect: (value: string) => any;    // TODO
-    noop: () => void;
-};
-
-const transitions: Transitions<State, AppEvents> = {
-    setValuePurely: value => state => void (state.value = value),
-    setValueWithSideEffect: value => state => {
-        state.value = value;
-        return sideEffects.consoleLogFoo();
+const transitions = createTransitions<State>({
+    fetchValue: () => state => {
+        state.status = "pending";
+        return sideEffects.fetchValue();
     },
-    onlySideEffect: () => () => sideEffects.consoleLogFoo(),
-    zero: () => () => {},
-};
+    fetchValueSuccess: (value: number) => state => {
+        state.value = value;
+        state.status = "initial";
+    },
+    fetchValueFailure: () => state => void (state.status = "error"),
+});
 
-// ...and need to be defined as functions that take 0, 1, or more arguments, return a promise,
+// ...and need to be defined as functions that take 0, 1, or more arguments, return a Promise,
 // and specify a success and a failure event to be triggered on resolution/rejection.
-const sideEffects = {
-    consoleLogFoo: createSideEffect<[], void, AppEvents>(
-        'consoleLogFoo',
-        () => Promise.resolve(),
-        transitions.zero,
-        transitions.zero,
-    ),
-};
+const sideEffects = createSideEffects(
+    transitions,
+    {
+        fetchValue: [
+            () => fetch('https://www.randomnumberapi.com/api/v1.0/random/')
+                .then(response => response.json())
+                .then(results => results[0]),
+            transitions.fetchValueSuccess,
+            transitions.fetchValueFailure,
+        ],
+    },
+);
 ```
 
 #### Usage

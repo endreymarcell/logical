@@ -73,7 +73,7 @@ type State = {
 
 const initialState: State = {
     value: 0,
-    status: "initia",
+    status: "initial",
 }
 
 // Side effects can be triggered by returing them from transitions...
@@ -82,27 +82,24 @@ const transitions = createTransitions<State>({
         state.status = "pending";
         return sideEffects.fetchValue();
     },
-    fetchValueSuccess: (value: number) => state => {
+    success: (value: number) => state => {
         state.value = value;
         state.status = "initial";
     },
-    fetchValueFailure: () => state => void (state.status = "error"),
+    failure: () => state => void (state.status = "error"),
 });
 
 // ...and need to be defined as functions that take 0, 1, or more arguments, return a Promise,
 // and specify a success and a failure event to be triggered on resolution/rejection.
-const sideEffects = createSideEffects(
-    transitions,
-    {
-        fetchValue: [
-            () => fetch('https://www.randomnumberapi.com/api/v1.0/random/')
-                .then(response => response.json())
-                .then(results => results[0]),
-            transitions.fetchValueSuccess,
-            transitions.fetchValueFailure,
-        ],
-    },
-);
+const sideEffects = createSideEffects(transitions, {
+    fetchValue: [
+        () => fetch('https://www.randomnumberapi.com/api/v1.0/random/')
+            .then(response => response.json())
+            .then(results => results[0]),
+        transitions.success,
+        transitions.failure,
+    ],
+});
 ```
 
 #### Usage

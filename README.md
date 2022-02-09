@@ -28,10 +28,10 @@ const initialState: State = {
 // and the state transitions that follow them
 // (these look like: payload => state => { modify the state here, do not return anything })
 const logic = createLogic<State>({
-    increase: amount => state => void (state.count += amount),
-    decrease: amount => state => void (state.count -= amount),
+    increase: (amount: number) => state => void (state.count += amount),
+    decrease: (amount: number) => state => void (state.count -= amount),
     reset: () => state => void (state.count = 0),
-    multiplyThenAdd: (mult, add) => state => void (state.count = state.count * mult + add),
+    multiplyThenAdd: (mult: number, add: number) => state => void (state.count = state.count * mult + add),
 });
 ```
 
@@ -104,4 +104,10 @@ const sideEffects = createSideEffects(logic, {
 
 #### Usage
 
-The same, really
+```typescript
+const store = new Store(initialState, logic);
+
+console.log(store.get().value);      // 0
+await store.dispatch.fetchValue();   // you can await events if they trigger a side-effect
+console.log(store.get().value);      // 42 if I am really lucky
+```

@@ -5,10 +5,10 @@ type State = {
 };
 
 const transitions = createTransitions<State>({
-    increase: amount => state => void (state.count += amount),
-    decrease: amount => state => void (state.count -= amount),
+    increase: (amount: number) => state => void (state.count += amount),
+    decrease: (amount: number) => state => void (state.count -= amount),
     reset: () => state => void (state.count = 0),
-    multiplyThenAdd: (mult, add) => state => void (state.count = state.count * mult + add),
+    multiplyThenAdd: (mult: number, add: number) => state => void (state.count = state.count * mult + add),
 });
 
 describe('state with single prop', () => {

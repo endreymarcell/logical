@@ -5,8 +5,8 @@ type State = {
 };
 
 const transitions = createTransitions<State>({
-    setValuePurely: value => state => void (state.value = value),
-    setValueWithSideEffect: value => state => {
+    setValuePurely: (value: string) => state => void (state.value = value),
+    setValueWithSideEffect: (value: string) => state => {
         state.value = value;
         return sideEffects.consoleLogFoo();
     },

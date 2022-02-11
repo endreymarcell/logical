@@ -5,7 +5,7 @@ type State = {
 };
 
 const transitions = createTransitions<State>({
-    set: value => state => void (state.value = value),
+    set: (value: string) => state => void (state.value = value),
 });
 
 describe('subscription', () => {

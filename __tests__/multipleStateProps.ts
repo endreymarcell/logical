@@ -6,11 +6,11 @@ type State = {
 };
 
 const transitions = createTransitions<State>({
-    increase: amount => state => {
+    increase: (amount: number) => state => {
         state.count += amount;
         state.numChanges++;
     },
-    decrease: amount => state => {
+    decrease: (amount: number) => state => {
         state.count -= amount;
         state.numChanges++;
     },
@@ -18,7 +18,7 @@ const transitions = createTransitions<State>({
         state.count = 0;
         state.numChanges++;
     },
-    multiplyThenAdd: (mult, add) => state => {
+    multiplyThenAdd: (mult: number, add: number) => state => {
         state.count = state.count * mult + add;
         state.numChanges++;
     },

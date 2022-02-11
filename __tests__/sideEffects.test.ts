@@ -4,12 +4,11 @@ type State = {
     value: string;
 };
 
-const transitions = createTransitions<State, any>({
+const transitions = createTransitions<State>()({
     successfulSideEffect: () => () => sideEffects.resolveWithSuccessString(),
     failingSideEffect: () => () => sideEffects.rejectWithError(),
     success: (result: string) => state => void (state.value = result),
     failure: (error: any) => state => void (state.value = error),
-    zero: () => () => {},
 });
 
 const sideEffects = createSideEffects(transitions, {

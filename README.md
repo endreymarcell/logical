@@ -27,7 +27,7 @@ const initialState: State = {
 // (these can take 0, 1, or more arguments, and should return void)
 // and the state transitions that follow them
 // (these look like: payload => state => { modify the state here, do not return anything })
-const logic = createLogic<State>({
+const logic = createLogic<State>()({
     increase: (amount: number) => state => void (state.count += amount),
     decrease: (amount: number) => state => void (state.count -= amount),
     reset: () => state => void (state.count = 0),
@@ -77,7 +77,7 @@ const initialState: State = {
 }
 
 // Side effects can be triggered by returing them from transitions...
-const logic = createLogic<State>({
+const logic = createLogic<State>()({
     fetchValue: () => state => {
         state.status = "pending";
         return sideEffects.fetchValue();

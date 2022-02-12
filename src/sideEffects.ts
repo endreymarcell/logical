@@ -33,7 +33,7 @@ export function createSideEffects<State extends BaseState, AppEvents extends Bas
 ) {
     const sideEffects = {} as { [key in keyof typeof inputs]: SideEffectCreator<any, any, AppEvents> };
     for (const key of Object.keys(inputs) as Array<keyof typeof inputs>) {
-        sideEffects[key] = createSideEffect(key as any, inputs[key] as any, transitions);
+        sideEffects[key] = createSideEffect(key as string, inputs[key], transitions);
     }
     return sideEffects;
 }

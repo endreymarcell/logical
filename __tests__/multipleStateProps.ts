@@ -5,7 +5,7 @@ type State = {
     numChanges: number;
 };
 
-const transitions = createTransitions<State>({
+const transitions = createTransitions<State>()({
     increase: (amount: number) => state => {
         state.count += amount;
         state.numChanges++;

@@ -4,7 +4,7 @@ type State = {
     count: number;
 };
 
-const transitions = createTransitions<State>({
+const transitions = createTransitions<State>()({
     increase: (amount: number) => state => void (state.count += amount),
     decrease: (amount: number) => state => void (state.count -= amount),
     reset: () => state => void (state.count = 0),

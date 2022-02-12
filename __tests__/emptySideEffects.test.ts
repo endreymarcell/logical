@@ -4,7 +4,7 @@ type State = {
     value: string;
 };
 
-const transitions = createTransitions<State>({
+const transitions = createTransitions<State>()({
     setValuePurely: (value: string) => state => void (state.value = value),
     setValueWithSideEffect: (value: string) => state => {
         state.value = value;

@@ -4,7 +4,7 @@ export abstract class BaseStore<ValueType> {
     protected value: ValueType;
     protected subscribers: Subscriber<ValueType>[];
 
-    constructor(initialValue: ValueType) {
+    protected constructor(initialValue: ValueType) {
         this.value = initialValue;
         this.subscribers = [];
     }

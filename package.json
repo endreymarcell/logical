@@ -6,7 +6,9 @@
   "scripts": {
     "build": "tsc",
     "format": "prettier -w src/**/*",
-    "test": "jest"
+    "test": "npm run test:types && npm run test:functions",
+    "test:types": "tsc --noEmit",
+    "test:functions": "jest __tests__/*"
   },
   "repository": {
     "type": "git",

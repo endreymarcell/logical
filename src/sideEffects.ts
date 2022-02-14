@@ -17,7 +17,7 @@ type SideEffectInstance<Args extends Array<any>, Return extends Array<any>, Stat
 export function createSideEffectInstance<State extends BaseState>() {
     return function <Args extends Array<any>, Return extends Array<any>>(
         name: PropertyKey,
-        input: [
+        blueprint: [
             Execute: (...args: Args) => Promise<Return>,
             SuccessTransition: Transition<Return, State>,
             FailureTransition: Transition<any, State>,
@@ -26,26 +26,27 @@ export function createSideEffectInstance<State extends BaseState>() {
         return (...args: Args) => ({
             name,
             args,
-            blueprint: input,
+            blueprint,
         });
     };
 }
 
 export function createSideEffects<State extends BaseState>() {
-    return function <InputsType extends Record<PropertyKey, SideEffectBlueprint<any, any, State>>>(
-        inputs: InputsType,
+    return function <Blueprints extends Record<PropertyKey, SideEffectBlueprint<any, any, State>>>(
+        blueprints: Blueprints,
     ) {
-        type TypedInput = typeof inputs;
-        const sideEffects = {} as {
-            [key in keyof TypedInput]: SideEffectInstance<
-                Parameters<TypedInput[key][0]>,
-                Awaited<ReturnType<TypedInput[key][0]>>,
+        type BlueprintsType = typeof blueprints;
+        type Execute = 0;
+        const sideEffectInstances = {} as {
+            [name in keyof BlueprintsType]: SideEffectInstance<
+                Parameters<BlueprintsType[name][Execute]>,
+                Awaited<ReturnType<BlueprintsType[name][Execute]>>,
                 State
             >;
         };
-        for (const key of Object.keys(inputs) as Array<keyof TypedInput>) {
-            sideEffects[key] = createSideEffectInstance<State>()(key, inputs[key]);
+        for (const key of Object.keys(blueprints) as Array<keyof BlueprintsType>) {
+            sideEffectInstances[key] = createSideEffectInstance<State>()(key, blueprints[key]);
         }
-        return sideEffects;
+        return sideEffectInstances;
     };
 }

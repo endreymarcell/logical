@@ -6,12 +6,6 @@ export type Transition<Args extends Array<any>, State extends BaseState> = (
     ...args: Args
 ) => (state: State) => void;
 
-/*
-type AsTransition<T, State extends BaseState> = T extends Transition<infer Args, State>
-    ? Transition<Args, State>
-    : never;
-*/
-
 export function createTransition<State extends BaseState>() {
     return function <Args extends Array<any>, ReturnVoid>(
         input: (...args: Args) => (state: State) => ReturnVoid extends void ? ReturnVoid : never,

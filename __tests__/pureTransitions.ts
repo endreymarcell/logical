@@ -9,16 +9,16 @@ describe('pure transitions', () => {
             reset: () => state => void (state.count = 0),
         });
         const store = new Store<State>({ count: 0 });
-        store.setTransitions(transitions);
+        const dispatcher = store.getDispatcher()(transitions);
         expect(store.get().count).toBe(0);
 
-        store.dispatch.plus(10);
+        dispatcher.plus(10);
         expect(store.get().count).toBe(10);
 
-        store.dispatch.plus(10);
+        dispatcher.plus(10);
         expect(store.get().count).toBe(20);
 
-        store.dispatch.reset();
+        dispatcher.reset();
         expect(store.get().count).toBe(0);
     });
 });

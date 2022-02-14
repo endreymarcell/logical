@@ -30,11 +30,3 @@ export function createTransitions<State extends BaseState>() {
         return transitions;
     };
 }
-
-export function getEmptyEventHandlers<State extends BaseState>() {
-    return function <Transitions extends Record<PropertyKey, Transition<any, State>>>(
-        transitions: Transitions,
-    ) {
-        return {};
-    };
-}

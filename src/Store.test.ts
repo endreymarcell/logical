@@ -22,7 +22,7 @@ stateTypeMatching: {
     // OK: matching state type
     const s1 = new Store<{ count: number }>({ count: 0 });
     const t1 = createTransitions<{ count: number }>()({});
-    s1.setTransitions(t1);
+    s1.getDispatcher()(t1);
 
     // Error: wrong property type
     const s2 = new Store<{ count: string }>({ count: 'zero' });
@@ -30,7 +30,7 @@ stateTypeMatching: {
         plus: (amount: number) => state => void (state.count += amount),
     });
     // @ts-expect-error
-    s2.setTransitions(t2);
+    s2.getDispatcher()(t2);
 
     // Error: transition has a property that is missing from the store's state
     const s3 = new Store<{}>({});
@@ -38,7 +38,7 @@ stateTypeMatching: {
         plus: (amount: number) => state => void (state.count += amount),
     });
     // @ts-expect-error
-    s3.setTransitions(t3);
+    s3.getDispatcher()(t3);
 
     // Error: the store's state has a property that's missing from the transition
     const s4 = new Store<{ count: number }>({ count: 0 });
@@ -48,8 +48,8 @@ stateTypeMatching: {
         },
     });
     // // @ts-expect-error
-    s4.setTransitions(t4);
-    // TODO apparently the transition's state type is allowed to have fewer properties than the store
+    s4.getDispatcher()(t4);
+    // TODO do I need to make this one fail?
 
     // Error: the store and the transition have a different property each
     const s5 = new Store<{ count: number }>({ count: 0 });
@@ -57,7 +57,7 @@ stateTypeMatching: {
         set: (newValue: string) => state => void (state.value = newValue),
     });
     // @ts-expect-error
-    s5.setTransitions(t5);
+    s5.getDispatcher()(t5);
 }
 
 dispatchType: {
@@ -66,27 +66,27 @@ dispatchType: {
         plus: (amount: number) => state => void (state.count += amount),
         reset: () => state => void (state.count = 0),
     });
-    s1.setTransitions(t1);
+    const d = s1.getDispatcher()(t1);
 
     // OK: no payload
-    s1.dispatch.reset();
+    d.reset();
 
     // OK: correct payload type
-    s1.dispatch.plus(10);
+    d.plus(10);
 
     // Error: superfluous argument passed
     // @ts-expect-error
-    s1.dispatch.reset(10);
+    d.reset(10);
 
     // Error: missing argument
     // @ts-expect-error
-    s1.dispatch.plus();
+    d.plus();
 
     // Error: wrong number of arguments
     // @ts-expect-error
-    s1.dispatch.plus(1, 2, 3);
+    d.plus(1, 2, 3);
 
     // Error: wrong argument type
     // @ts-expect-error
-    s1.dispatch.plus('expecting a number');
+    d.plus('expecting a number');
 }

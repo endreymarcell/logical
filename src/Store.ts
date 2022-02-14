@@ -3,28 +3,25 @@ import type { Transition } from './transitions';
 import produce from 'immer';
 
 export class Store<ValueType> extends BaseStore<ValueType> {
-    private eventHandlers: Record<PropertyKey, any>;
-
     constructor(initialValue: ValueType) {
         super(initialValue);
-        this.eventHandlers = {};
     }
 
-    setTransitions<Transitions extends Record<PropertyKey, Transition<any, ValueType>>>(
-        transitions: Transitions,
-    ) {
-        this.eventHandlers = this.getEventHandlers(transitions);
-    }
-
-    private getEventHandlers<Transitions extends Record<PropertyKey, Transition<any, ValueType>>>(
-        transitions: Transitions,
-    ) {
-        const eventHandlers = {} as Record<keyof Transitions, ReturnType<Transition<any, ValueType>>>;
-        // The `as` type cast is required because `Object.keys(foo)` returns string, not `keyof foo`
-        for (const eventName of Object.keys(transitions) as Array<keyof Transitions>) {
-            eventHandlers[eventName] = this.getEventHandler(transitions[eventName]);
-        }
-        return eventHandlers;
+    public getDispatcher() {
+        const that = this;
+        return function <Transitions extends Record<PropertyKey, Transition<Array<any>, ValueType>>>(
+            transitions: Transitions,
+        ) {
+            type TypedTransitions = typeof transitions;
+            const eventHandlers = {} as {
+                [key in keyof TypedTransitions]: (...args: Parameters<TypedTransitions[key]>) => void;
+            };
+            // The `as` type cast is required because `Object.keys(foo)` returns string, not `keyof foo`
+            for (const eventName of Object.keys(transitions) as Array<keyof TypedTransitions>) {
+                eventHandlers[eventName] = that.getEventHandler(transitions[eventName]);
+            }
+            return eventHandlers;
+        };
     }
 
     // For a given transition definition `payload? => state => void`
@@ -42,9 +39,5 @@ export class Store<ValueType> extends BaseStore<ValueType> {
             });
             this.broadcast();
         };
-    }
-
-    get dispatch() {
-        return this.eventHandlers;
     }
 }

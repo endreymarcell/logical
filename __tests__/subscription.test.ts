@@ -1,5 +1,5 @@
-import { createTransitions } from '../src/transitions';
-import { Store } from '../src/Store';
+import { createTransitions } from '../src';
+import { Store } from '../src';
 
 type State = {
     value: string;

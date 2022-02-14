@@ -1,5 +1,5 @@
-import { createTransitions } from '../src/transitions';
-import { Store } from '../src/Store';
+import { createTransitions } from '../src';
+import { Store } from '../src';
 
 describe('pure transitions', () => {
     test('single state field, single parameter payload', () => {

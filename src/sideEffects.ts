@@ -15,11 +15,11 @@ type SideEffectInstance<Args extends Array<any>, Return extends Array<any>, Stat
 };
 
 export function createSideEffectInstance<State extends BaseState>() {
-    return function <Args extends Array<any>, Return extends Array<any>>(
+    return function <Args extends Array<any>, Return>(
         name: PropertyKey,
         blueprint: [
             Execute: (...args: Args) => Promise<Return>,
-            SuccessTransition: Transition<Return, State>,
+            SuccessTransition: Transition<[Return], State>,
             FailureTransition: Transition<any, State>,
         ],
     ) {

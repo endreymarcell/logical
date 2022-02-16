@@ -1,4 +1,4 @@
-import { createTransition, createTransitions } from './transitions';
+import { createTransition, createTransitions, OpaqueSideEffectType } from './transitions';
 
 createTransition: {
     // OK: everything is empty
@@ -78,4 +78,20 @@ createTransitionsWithoutHelper: {
     // Error: wrong argument type
     // @ts-expect-error
     t2.plus('foobar');
+}
+
+opaqueSideEffectType: {
+    const s1: OpaqueSideEffectType<{}> = () => ({
+        name: 'effect',
+        args: [],
+        blueprint: [() => Promise.resolve([]), () => () => {}, () => () => {}],
+    });
+
+    // OK: returning something that matches an OpaqueSideEffect
+    createTransition<{}>()(() => () => s1);
+
+    // Error: returning something that does not match an OpaqueSideEffect
+    // TODO: can I make it return a more helpful error message though?
+    // @ts-expect-error
+    createTransition<{}>()(() => () => 'foobar');
 }

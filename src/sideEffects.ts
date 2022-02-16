@@ -6,9 +6,11 @@ type SideEffectBlueprint<Args extends Array<any>, Return extends Array<any>, Sta
     FailureTransition: Transition<any, State>,
 ];
 
-type SideEffectInstance<Args extends Array<any>, Return extends Array<any>, State extends BaseState> = (
-    ...args: Args
-) => {
+export type SideEffectInstance<
+    Args extends Array<any>,
+    Return extends Array<any>,
+    State extends BaseState,
+> = (...args: Args) => {
     name: PropertyKey;
     args: Args;
     blueprint: SideEffectBlueprint<Args, Return, State>;

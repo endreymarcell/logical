@@ -19,13 +19,15 @@ export type Transition<Args extends Array<any>, State extends BaseState> = (
     ...args: Args
 ) => (state: State) => void | OpaqueSideEffectType<State>;
 
+type MustBeOpaqueSideEffectOrVoid<T, State extends BaseState> = T extends OpaqueSideEffectType<State>
+    ? T
+    : T extends void
+    ? T
+    : never;
+
 export function createTransition<State extends BaseState>() {
     return function <Args extends Array<any>, Return>(
-        input: (
-            ...args: Args
-        ) => (
-            state: State,
-        ) => Return extends OpaqueSideEffectType<State> ? Return : Return extends void ? Return : never,
+        input: (...args: Args) => (state: State) => MustBeOpaqueSideEffectOrVoid<Return, State>,
     ) {
         return input;
     };

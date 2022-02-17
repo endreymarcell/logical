@@ -1,6 +1,7 @@
 import { BaseStore } from './BaseStore';
 import type { Transition } from './transitions';
 import produce from 'immer';
+import { SideEffectBlueprint } from './sideEffects';
 
 export class Store<ValueType> extends BaseStore<ValueType> {
     constructor(initialValue: ValueType) {
@@ -9,18 +10,52 @@ export class Store<ValueType> extends BaseStore<ValueType> {
 
     public getDispatcher() {
         const that = this;
-        return function <Transitions extends Record<PropertyKey, Transition<Array<any>, ValueType>>>(
-            transitions: Transitions,
-        ) {
+        return function <
+            Transitions extends Record<PropertyKey, Transition<Array<any>, ValueType>>,
+            SideEffects extends Record<PropertyKey, SideEffectBlueprint<Array<any>, Array<any>, ValueType>>,
+        >(transitions: Transitions, sideEffects?: SideEffects) {
             type TypedTransitions = typeof transitions;
-            const eventHandlers = {} as {
+            type TypedSideEffects = typeof sideEffects;
+
+            type EventHandlersForTransitions = {
                 [key in keyof TypedTransitions]: (...args: Parameters<TypedTransitions[key]>) => void;
             };
-            // The `as` type cast is required because `Object.keys(foo)` returns string, not `keyof foo`
+            const eventHandlersForTransitions = {} as EventHandlersForTransitions;
+
+            type EventHandlersForSideEffectSuccess = {
+                [key in keyof TypedSideEffects as `${key}Success`]: (
+                    ...args: [ReturnType<TypedSideEffects[key][0]>]
+                ) => void;
+            };
+            const eventHandlersForSideEffectSuccess = {} as EventHandlersForSideEffectSuccess;
+
+            type EventHandlersForSideEffectFailure = {
+                [key in keyof TypedSideEffects as `${key}Failure`]: (...args: [any]) => void;
+            };
+            const eventHandlersForSideEffectFailure = {} as EventHandlersForSideEffectFailure;
+
             for (const eventName of Object.keys(transitions) as Array<keyof TypedTransitions>) {
-                eventHandlers[eventName] = that.getEventHandler(transitions[eventName]);
+                eventHandlersForTransitions[eventName] = that.getEventHandler(transitions[eventName]);
             }
-            return eventHandlers;
+
+            if (sideEffects !== undefined) {
+                for (const eventName of Object.keys(sideEffects) as Array<keyof TypedSideEffects>) {
+                    // @ts-ignore
+                    eventHandlersForSideEffectSuccess[`${eventName}Success`] = that.getEventHandler(
+                        sideEffects[eventName][1],
+                    );
+                    // @ts-ignore
+                    eventHandlersForSideEffectFailure[`${eventName}Failure`] = that.getEventHandler(
+                        sideEffects[eventName][2],
+                    );
+                }
+            }
+
+            return {
+                ...eventHandlersForTransitions,
+                ...eventHandlersForSideEffectSuccess,
+                ...eventHandlersForSideEffectFailure,
+            };
         };
     }
 

@@ -1,6 +1,10 @@
 import { BaseState, Transition } from './transitions';
 
-type SideEffectBlueprint<Args extends Array<any>, Return extends Array<any>, State extends BaseState> = [
+export type SideEffectBlueprint<
+    Args extends Array<any>,
+    Return extends Array<any>,
+    State extends BaseState,
+> = [
     Execute: (...args: Args) => Promise<Return>,
     SuccessTransition: Transition<Return, State>,
     FailureTransition: Transition<any, State>,

@@ -1,11 +1,14 @@
 import { BaseStore } from './BaseStore';
-import type { Transition } from './transitions';
+import type { OpaqueSideEffectType, Transition } from './transitions';
 import produce from 'immer';
 import { SideEffectInstanceCreator } from './sideEffects';
 
 export class Store<ValueType> extends BaseStore<ValueType> {
+    private localCopyOfTransitions: Record<PropertyKey, any>;
+
     constructor(initialValue: ValueType) {
         super(initialValue);
+        this.localCopyOfTransitions = {};
     }
 
     public getDispatcher() {
@@ -56,28 +59,51 @@ export class Store<ValueType> extends BaseStore<ValueType> {
                 }
             }
 
-            return {
+            const finalTransitions = {
                 ...eventHandlersForTransitions,
                 ...eventHandlersForSideEffectSuccess,
                 ...eventHandlersForSideEffectFailure,
             };
+            that.localCopyOfTransitions = finalTransitions;
+            return finalTransitions;
         };
     }
 
-    // For a given transition definition `payload? => state => void`
-    // create an event handler `payload? => void`, which
-    // 1. updates the state of the store using Immer, and
-    // 2. broadcasts this new state to the store's subscribers.
+    // For a given transition definition `payload? => state => void | SideEffect`
+    // create an event handler `payload? => void | SideEffect`, which
+    // 1. updates the state of the store using Immer,
+    // 2. broadcasts this new state to the store's subscribers, and
+    // 3. executes possible returned side effects.
     private getEventHandler<Args extends Array<any>>(transition: Transition<Args, ValueType>) {
         return (...payload: Parameters<typeof transition>) => {
             // Bind the specific payload to the transition to get a state updater function
             const updaterForGivenPayload = transition(...payload);
+
+            const maybeSideEffects: Array<OpaqueSideEffectType<ValueType>> = [];
+
             // Use Immer to produce the new value
             this.value = produce(this.value, draftState => {
                 // Update the state
-                updaterForGivenPayload(draftState as ValueType);
+                const maybeSideEffect = updaterForGivenPayload(draftState as ValueType);
+                if (maybeSideEffect) {
+                    maybeSideEffects.push(maybeSideEffect);
+                }
             });
             this.broadcast();
+
+            if (maybeSideEffects.length > 0) {
+                this.executeSideEffect(maybeSideEffects[0]);
+            }
         };
+    }
+
+    private executeSideEffect(sideEffect: OpaqueSideEffectType<ValueType>) {
+        const {
+            args,
+            blueprint: [execute],
+        } = sideEffect;
+        execute(...args)
+            .then(result => this.localCopyOfTransitions[String(sideEffect.name) + 'Success'](result))
+            .catch(problem => this.localCopyOfTransitions[String(sideEffect.name) + 'Failure'](problem));
     }
 }

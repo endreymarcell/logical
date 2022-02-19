@@ -2,7 +2,7 @@ import { createTransitions, Store } from '../src';
 import { createSideEffectInstanceCreators } from '../src/sideEffects';
 
 describe('side effect', () => {
-    test('huh', () => {
+    test('huh', async () => {
         // GIVEN
         type State = {
             value: string;
@@ -37,12 +37,15 @@ describe('side effect', () => {
 
         // WHEN
         d.good();
+        await Promise.resolve();
 
         // THEN
         expect(store.get().value).toBe('success');
 
         // WHEN
         d.bad();
+        await Promise.resolve();
+        await Promise.resolve();
 
         // THEN
         expect(store.get().value).toBe('failure');

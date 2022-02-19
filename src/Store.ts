@@ -92,7 +92,9 @@ export class Store<ValueType> extends BaseStore<ValueType> {
             this.broadcast();
 
             if (maybeSideEffects.length > 0) {
-                this.executeSideEffect(maybeSideEffects[0]);
+                return this.executeSideEffect(maybeSideEffects[0]);
+            } else {
+                return Promise.resolve();
             }
         };
     }
@@ -102,7 +104,7 @@ export class Store<ValueType> extends BaseStore<ValueType> {
             args,
             blueprint: [execute],
         } = sideEffect;
-        execute(...args)
+        return execute(...args)
             .then(result => this.localCopyOfTransitions[String(sideEffect.name) + 'Success'](result))
             .catch(problem => this.localCopyOfTransitions[String(sideEffect.name) + 'Failure'](problem));
     }

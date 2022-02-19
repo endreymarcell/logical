@@ -36,16 +36,13 @@ describe('side effect', () => {
         const d = store.getDispatcher()(transitions, sideEffects);
 
         // WHEN
-        d.good();
-        await Promise.resolve();
+        await d.good();
 
         // THEN
         expect(store.get().value).toBe('success');
 
         // WHEN
-        d.bad();
-        await Promise.resolve();
-        await Promise.resolve();
+        await d.bad();
 
         // THEN
         expect(store.get().value).toBe('failure');

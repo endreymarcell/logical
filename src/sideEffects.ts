@@ -10,7 +10,7 @@ export type SideEffectBlueprint<
     FailureTransition: Transition<any, State>,
 ];
 
-export type SideEffectInstance<
+export type SideEffectInstanceCreator<
     Args extends Array<any>,
     Return extends Array<any>,
     State extends BaseState,
@@ -20,7 +20,7 @@ export type SideEffectInstance<
     blueprint: SideEffectBlueprint<Args, Return, State>;
 };
 
-export function createSideEffectInstance<State extends BaseState>() {
+export function createSideEffectInstanceCreator<State extends BaseState>() {
     return function <Args extends Array<any>, Return>(
         name: PropertyKey,
         blueprint: [
@@ -37,22 +37,22 @@ export function createSideEffectInstance<State extends BaseState>() {
     };
 }
 
-export function createSideEffects<State extends BaseState>() {
+export function createSideEffectInstanceCreators<State extends BaseState>() {
     return function <Blueprints extends Record<PropertyKey, SideEffectBlueprint<any, any, State>>>(
         blueprints: Blueprints,
     ) {
         type BlueprintsType = typeof blueprints;
         type Execute = 0;
-        const sideEffectInstances = {} as {
-            [name in keyof BlueprintsType]: SideEffectInstance<
+        const sideEffectInstanceCreators = {} as {
+            [name in keyof BlueprintsType]: SideEffectInstanceCreator<
                 Parameters<BlueprintsType[name][Execute]>,
                 Awaited<ReturnType<BlueprintsType[name][Execute]>>,
                 State
             >;
         };
         for (const key of Object.keys(blueprints) as Array<keyof BlueprintsType>) {
-            sideEffectInstances[key] = createSideEffectInstance<State>()(key, blueprints[key]);
+            sideEffectInstanceCreators[key] = createSideEffectInstanceCreator<State>()(key, blueprints[key]);
         }
-        return sideEffectInstances;
+        return sideEffectInstanceCreators;
     };
 }

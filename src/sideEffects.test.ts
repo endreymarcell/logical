@@ -1,28 +1,28 @@
-import { createSideEffectInstance, createSideEffects } from './sideEffects';
+import { createSideEffectInstanceCreator, createSideEffectInstanceCreators } from './sideEffects';
 
 const noop = () => () => {};
 const sum = (nums: Array<number>) => nums.reduce((a, b) => a + b, 0);
 
 createSideEffectInstance: {
     // OK: empty case
-    createSideEffectInstance<{}>()('name', [() => Promise.resolve(), noop, noop]);
+    createSideEffectInstanceCreator<{}>()('name', [() => Promise.resolve(), noop, noop]);
 
     // OK: resolved value matches event payload
-    createSideEffectInstance<{ count: number }>()('name', [
+    createSideEffectInstanceCreator<{ count: number }>()('name', [
         () => Promise.resolve(99),
         value => state => void (state.count = value),
         () => () => {},
     ]);
 
     // OK: resolving with array
-    createSideEffectInstance<{ count: number }>()('name', [
+    createSideEffectInstanceCreator<{ count: number }>()('name', [
         () => Promise.resolve([1, 2, 3]),
         value => state => void (state.count = sum(value)),
         noop,
     ]);
 
     // Error: resolved value does not match event payload
-    createSideEffectInstance<{ count: number }>()('name', [
+    createSideEffectInstanceCreator<{ count: number }>()('name', [
         () => Promise.resolve('some text'),
         // @ts-expect-error
         value => state => void (state.count = value),
@@ -30,7 +30,7 @@ createSideEffectInstance: {
     ]);
 
     // Error: resolving with void while event expects payload
-    createSideEffectInstance<{ count: number }>()('name', [
+    createSideEffectInstanceCreator<{ count: number }>()('name', [
         () => Promise.resolve(),
         // @ts-expect-error
         value => state => void (state.count = value),
@@ -40,11 +40,11 @@ createSideEffectInstance: {
 
 sideEffectInstance: {
     // OK: no params
-    const e1 = createSideEffectInstance<{}>()('name', [() => Promise.resolve(), noop, noop]);
+    const e1 = createSideEffectInstanceCreator<{}>()('name', [() => Promise.resolve(), noop, noop]);
     e1();
 
     // OK: matching param
-    const e2 = createSideEffectInstance<{}>()('name', [
+    const e2 = createSideEffectInstanceCreator<{}>()('name', [
         (count: number) => Promise.resolve(count),
         noop,
         noop,
@@ -61,7 +61,7 @@ sideEffectInstance: {
 }
 
 createSideEffects: {
-    const e = createSideEffects<{ count: number }>()({
+    const e = createSideEffectInstanceCreators<{ count: number }>()({
         noParams: [() => Promise.resolve(), noop, noop],
         takesNumber: [(count: number) => Promise.resolve(count), noop, noop],
         takesString: [(text: string) => Promise.resolve(text), noop, noop],

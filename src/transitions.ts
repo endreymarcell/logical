@@ -1,4 +1,4 @@
-import { SideEffectInstance } from './sideEffects';
+import { SideEffectInstanceCreator } from './sideEffects';
 
 export type BaseState = {
     [key: PropertyKey]: any;
@@ -9,7 +9,7 @@ export type BaseState = {
 // Therefore, I only have this opaque type here to ensure that
 // whatever is being returned from a transition has the shape of a side effect.
 // It's a very specific shape anyway so it'll probably catch wrong invocations.
-export type OpaqueSideEffectType<State extends BaseState> = SideEffectInstance<
+export type OpaqueSideEffectType<State extends BaseState> = SideEffectInstanceCreator<
     Array<unknown>,
     Array<unknown>,
     State

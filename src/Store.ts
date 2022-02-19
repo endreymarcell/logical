@@ -47,11 +47,11 @@ export class Store<ValueType> extends BaseStore<ValueType> {
                 >) {
                     // @ts-ignore
                     eventHandlersForSideEffectSuccess[`${eventName}Success`] = that.getEventHandler(
-                        sideEffects[eventName]()['blueprint'][1],
+                        sideEffects[eventName].successTransition,
                     );
                     // @ts-ignore
                     eventHandlersForSideEffectFailure[`${eventName}Failure`] = that.getEventHandler(
-                        sideEffects[eventName]()['blueprint'][2],
+                        sideEffects[eventName].failureTransition,
                     );
                 }
             }

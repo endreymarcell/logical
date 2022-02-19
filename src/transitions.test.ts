@@ -81,11 +81,11 @@ createTransitionsWithoutHelper: {
 }
 
 opaqueSideEffectType: {
-    const s1: OpaqueSideEffectType<{}> = () => ({
+    const s1: OpaqueSideEffectType<{}> = {
         name: 'effect',
         args: [],
         blueprint: [() => Promise.resolve([]), () => () => {}, () => () => {}],
-    });
+    };
 
     // OK: returning something that matches an OpaqueSideEffect
     createTransition<{}>()(() => () => s1);

@@ -24,7 +24,11 @@ export type SideEffectInstanceCreator<
     Args extends Array<any>,
     Return extends Array<any> | void,
     State extends BaseState,
-> = (...args: Args) => SideEffectInstance<Args, Return, State>;
+> = {
+    (...args: Args): SideEffectInstance<Args, Return, State>;
+    successTransition: Transition<Args, State>;
+    failureTransition: Transition<Args, State>;
+};
 
 export function createSideEffectInstanceCreator<State extends BaseState>() {
     return function <Args extends Array<any>, Return>(
@@ -35,11 +39,10 @@ export function createSideEffectInstanceCreator<State extends BaseState>() {
             FailureTransition: Transition<any, State>,
         ],
     ) {
-        return (...args: Args) => ({
-            name,
-            args,
-            blueprint,
-        });
+        const instanceCreator = (...args: Args) => ({ name, args, blueprint });
+        instanceCreator.successTransition = blueprint[1];
+        instanceCreator.failureTransition = blueprint[2];
+        return instanceCreator;
     };
 }
 

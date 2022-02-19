@@ -2,17 +2,17 @@ import { BaseState, Transition } from './transitions';
 
 export type SideEffectBlueprint<
     Args extends Array<any>,
-    Return extends Array<any>,
+    Return extends Array<any> | void,
     State extends BaseState,
 > = [
     Execute: (...args: Args) => Promise<Return>,
-    SuccessTransition: Transition<Return, State>,
+    SuccessTransition: Transition<Return extends Array<any> ? Return : [], State>,
     FailureTransition: Transition<any, State>,
 ];
 
 export type SideEffectInstance<
     Args extends Array<any>,
-    Return extends Array<any>,
+    Return extends Array<any> | void,
     State extends BaseState,
 > = {
     name: PropertyKey;
@@ -22,7 +22,7 @@ export type SideEffectInstance<
 
 export type SideEffectInstanceCreator<
     Args extends Array<any>,
-    Return extends Array<any>,
+    Return extends Array<any> | void,
     State extends BaseState,
 > = (...args: Args) => SideEffectInstance<Args, Return, State>;
 

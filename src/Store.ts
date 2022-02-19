@@ -1,7 +1,7 @@
 import { BaseStore } from './BaseStore';
 import type { Transition } from './transitions';
 import produce from 'immer';
-import { SideEffectBlueprint } from './sideEffects';
+import { SideEffectInstanceCreator } from './sideEffects';
 
 export class Store<ValueType> extends BaseStore<ValueType> {
     constructor(initialValue: ValueType) {
@@ -12,10 +12,13 @@ export class Store<ValueType> extends BaseStore<ValueType> {
         const that = this;
         return function <
             Transitions extends Record<PropertyKey, Transition<Array<any>, ValueType>>,
-            SideEffects extends Record<PropertyKey, SideEffectBlueprint<Array<any>, Array<any>, ValueType>>,
+            SideEffects extends Record<
+                PropertyKey,
+                SideEffectInstanceCreator<Array<any>, Array<any> | void, ValueType>
+            >,
         >(transitions: Transitions, sideEffects?: SideEffects) {
             type TypedTransitions = typeof transitions;
-            type TypedSideEffects = typeof sideEffects;
+            type TypedSideEffectInstanceCreators = typeof sideEffects;
 
             type EventHandlersForTransitions = {
                 [key in keyof TypedTransitions]: (...args: Parameters<TypedTransitions[key]>) => void;
@@ -23,14 +26,14 @@ export class Store<ValueType> extends BaseStore<ValueType> {
             const eventHandlersForTransitions = {} as EventHandlersForTransitions;
 
             type EventHandlersForSideEffectSuccess = {
-                [key in keyof TypedSideEffects as `${key}Success`]: (
-                    ...args: [ReturnType<TypedSideEffects[key][0]>]
+                [key in keyof TypedSideEffectInstanceCreators as `${key}Success`]: (
+                    ...args: [ReturnType<TypedSideEffectInstanceCreators[key]>]
                 ) => void;
             };
             const eventHandlersForSideEffectSuccess = {} as EventHandlersForSideEffectSuccess;
 
             type EventHandlersForSideEffectFailure = {
-                [key in keyof TypedSideEffects as `${key}Failure`]: (...args: [any]) => void;
+                [key in keyof TypedSideEffectInstanceCreators as `${key}Failure`]: (...args: [any]) => void;
             };
             const eventHandlersForSideEffectFailure = {} as EventHandlersForSideEffectFailure;
 
@@ -39,14 +42,16 @@ export class Store<ValueType> extends BaseStore<ValueType> {
             }
 
             if (sideEffects !== undefined) {
-                for (const eventName of Object.keys(sideEffects) as Array<keyof TypedSideEffects>) {
+                for (const eventName of Object.keys(sideEffects) as Array<
+                    keyof TypedSideEffectInstanceCreators
+                >) {
                     // @ts-ignore
                     eventHandlersForSideEffectSuccess[`${eventName}Success`] = that.getEventHandler(
-                        sideEffects[eventName][1],
+                        sideEffects[eventName]()['blueprint'][1],
                     );
                     // @ts-ignore
                     eventHandlersForSideEffectFailure[`${eventName}Failure`] = that.getEventHandler(
-                        sideEffects[eventName][2],
+                        sideEffects[eventName]()['blueprint'][2],
                     );
                 }
             }

@@ -10,15 +10,21 @@ export type SideEffectBlueprint<
     FailureTransition: Transition<any, State>,
 ];
 
-export type SideEffectInstanceCreator<
+export type SideEffectInstance<
     Args extends Array<any>,
     Return extends Array<any>,
     State extends BaseState,
-> = (...args: Args) => {
+> = {
     name: PropertyKey;
     args: Args;
     blueprint: SideEffectBlueprint<Args, Return, State>;
 };
+
+export type SideEffectInstanceCreator<
+    Args extends Array<any>,
+    Return extends Array<any>,
+    State extends BaseState,
+> = (...args: Args) => SideEffectInstance<Args, Return, State>;
 
 export function createSideEffectInstanceCreator<State extends BaseState>() {
     return function <Args extends Array<any>, Return>(

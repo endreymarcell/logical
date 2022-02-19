@@ -1,7 +1,7 @@
 import { createTransitions, Store } from '../src';
 import { createSideEffectInstanceCreators } from '../src/sideEffects';
 
-describe('side effect', async () => {
+describe('side effect', () => {
     test('huh', () => {
         // GIVEN
         type State = {

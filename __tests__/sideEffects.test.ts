@@ -1,31 +1,50 @@
-import { createSideEffects, createTransitions, StateStore } from '../src';
+import { createTransitions, Store } from '../src';
+import { createSideEffectInstanceCreators } from '../src/sideEffects';
 
-type State = {
-    value: string;
-};
+describe('side effect', () => {
+    test('huh', async () => {
+        // GIVEN
+        type State = {
+            value: string;
+        };
+        const initialState: State = {
+            value: 'initial',
+        };
+        const sideEffects = createSideEffectInstanceCreators<State>()({
+            successful: [
+                () => Promise.resolve(),
+                () => state => void (state.value = 'success'),
+                () => state => void (state.value = 'failure'),
+            ],
+            failing: [
+                () => Promise.reject(),
+                () => state => void (state.value = 'success'),
+                () => state => void (state.value = 'failure'),
+            ],
+        });
+        const transitions = createTransitions<State>()({
+            good: () => state => {
+                state.value = 'started';
+                return sideEffects.successful();
+            },
+            bad: () => state => {
+                state.value = 'started';
+                return sideEffects.failing();
+            },
+        });
+        const store = new Store<State>(initialState);
+        const d = store.getDispatcher()(transitions, sideEffects);
 
-const transitions = createTransitions<State>()({
-    successfulSideEffect: () => () => sideEffects.resolveWithSuccessString(),
-    failingSideEffect: () => () => sideEffects.rejectWithError(),
-    success: (result: string) => state => void (state.value = result),
-    failure: (error: any) => state => void (state.value = error),
-});
+        // WHEN
+        await d.good();
 
-const sideEffects = createSideEffects(transitions, {
-    resolveWithSuccessString: [() => Promise.resolve('success'), transitions.success, transitions.failure],
-    rejectWithError: [() => Promise.reject('error'), transitions.success, transitions.failure],
-});
-
-describe('side effects', () => {
-    test('success action', async () => {
-        const store = new StateStore({ value: 'initial' }, transitions);
-        await store.dispatch.successfulSideEffect();
+        // THEN
         expect(store.get().value).toBe('success');
-    });
 
-    test('failure action', async () => {
-        const store = new StateStore({ value: 'initial' }, transitions);
-        await store.dispatch.failingSideEffect();
-        expect(store.get().value).toBe('error');
+        // WHEN
+        await d.bad();
+
+        // THEN
+        expect(store.get().value).toBe('failure');
     });
 });

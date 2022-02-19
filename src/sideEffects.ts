@@ -1,60 +1,67 @@
-import type { BaseAppEvents, Transitions } from './transitions';
-import { BaseState } from './StateStore';
+import { BaseState, Transition } from './transitions';
 
-type SideEffectInput<Args extends Array<any>, ReturnType, AppEvents extends BaseAppEvents> = [
-    execute: (...payload: Args) => Promise<ReturnType>,
-    successEvent: AppEvents[keyof AppEvents],
-    failureEvent: AppEvents[keyof AppEvents],
+export type SideEffectBlueprint<
+    Args extends Array<any>,
+    Return extends Array<any> | void,
+    State extends BaseState,
+> = [
+    Execute: (...args: Args) => Promise<Return>,
+    SuccessTransition: Transition<Return extends Array<any> ? Return : [], State>,
+    FailureTransition: Transition<any, State>,
 ];
 
-function createSideEffect<
+export type SideEffectInstance<
     Args extends Array<any>,
-    ReturnType,
+    Return extends Array<any> | void,
     State extends BaseState,
-    AppEvents extends BaseAppEvents,
->(
-    name: string,
-    input: SideEffectInput<Args, ReturnType, any>,
-    transitions: Transitions<State, AppEvents>,
-): SideEffectCreator<Args, ReturnType, AppEvents> {
-    const [execute, successEvent, failureEvent] = input;
-    return (...args: Args) => ({
-        name,
-        execute,
-        args,
-        successEventName: getEventNameByHandler(successEvent, transitions),
-        failureEventName: getEventNameByHandler(failureEvent, transitions),
-    });
-}
-
-export function createSideEffects<State extends BaseState, AppEvents extends BaseAppEvents>(
-    transitions: Transitions<State, AppEvents>,
-    inputs: { [key: string]: SideEffectInput<any, any, AppEvents> },
-) {
-    const sideEffects = {} as { [key in keyof typeof inputs]: SideEffectCreator<any, any, AppEvents> };
-    for (const key of Object.keys(inputs) as Array<keyof typeof inputs>) {
-        sideEffects[key] = createSideEffect(key as string, inputs[key], transitions);
-    }
-    return sideEffects;
-}
-
-export type SideEffectThunk<Args extends Array<any>, ReturnType, AppEvents> = {
-    name: string;
-    execute: (...payload: Args) => Promise<ReturnType>;
+> = {
+    name: PropertyKey;
     args: Args;
-    successEventName: keyof AppEvents | undefined;
-    failureEventName: keyof AppEvents | undefined;
+    blueprint: SideEffectBlueprint<Args, Return, State>;
 };
 
-type SideEffectCreator<Args extends Array<any>, ReturnType, AppEvents extends BaseAppEvents> = (
-    ...args: Args
-) => SideEffectThunk<Args, ReturnType, AppEvents>;
+export type SideEffectInstanceCreator<
+    Args extends Array<any>,
+    Return extends Array<any> | void,
+    State extends BaseState,
+> = {
+    (...args: Args): SideEffectInstance<Args, Return, State>;
+    successTransition: Transition<Args, State>;
+    failureTransition: Transition<Args, State>;
+};
 
-function getEventNameByHandler<State extends BaseState, AppEvents extends BaseAppEvents>(
-    handler: Transitions<State, AppEvents>[keyof AppEvents],
-    transitions: Transitions<State, AppEvents>,
-) {
-    return Object.keys(transitions).find(key => transitions[key] === handler);
+export function createSideEffectInstanceCreator<State extends BaseState>() {
+    return function <Args extends Array<any>, Return>(
+        name: PropertyKey,
+        blueprint: [
+            Execute: (...args: Args) => Promise<Return>,
+            SuccessTransition: Transition<[Return], State>,
+            FailureTransition: Transition<any, State>,
+        ],
+    ) {
+        const instanceCreator = (...args: Args) => ({ name, args, blueprint });
+        instanceCreator.successTransition = blueprint[1];
+        instanceCreator.failureTransition = blueprint[2];
+        return instanceCreator;
+    };
 }
 
-export type SideEffectList<AppEvents extends BaseAppEvents> = Array<SideEffectThunk<any, any, AppEvents>>;
+export function createSideEffectInstanceCreators<State extends BaseState>() {
+    return function <Blueprints extends Record<PropertyKey, SideEffectBlueprint<any, any, State>>>(
+        blueprints: Blueprints,
+    ) {
+        type BlueprintsType = typeof blueprints;
+        type Execute = 0;
+        const sideEffectInstanceCreators = {} as {
+            [name in keyof BlueprintsType]: SideEffectInstanceCreator<
+                Parameters<BlueprintsType[name][Execute]>,
+                Awaited<ReturnType<BlueprintsType[name][Execute]>>,
+                State
+            >;
+        };
+        for (const key of Object.keys(blueprints) as Array<keyof BlueprintsType>) {
+            sideEffectInstanceCreators[key] = createSideEffectInstanceCreator<State>()(key, blueprints[key]);
+        }
+        return sideEffectInstanceCreators;
+    };
+}

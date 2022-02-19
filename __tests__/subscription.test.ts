@@ -1,4 +1,5 @@
-import { createTransitions, StateStore } from '../src';
+import { createTransitions } from '../src';
+import { Store } from '../src';
 
 type State = {
     value: string;
@@ -11,12 +12,13 @@ const transitions = createTransitions<State>()({
 describe('subscription', () => {
     test('single subscriber', () => {
         // given
-        const store = new StateStore({ value: '' }, transitions);
+        const store = new Store({ value: '' });
+        const dispatcher = store.getDispatcher()(transitions);
         const sub = jest.fn();
         store.subscribe(sub);
 
         // when
-        store.dispatch.set('foo');
+        dispatcher.set('foo');
 
         // then
         expect(sub).toBeCalledWith({ value: 'foo' });
@@ -24,14 +26,15 @@ describe('subscription', () => {
 
     test('multiple subscribers', () => {
         // given
-        const store = new StateStore({ value: '' }, transitions);
+        const store = new Store({ value: '' });
+        const dispatcher = store.getDispatcher()(transitions);
         const sub1 = jest.fn();
         const sub2 = jest.fn();
         store.subscribe(sub1);
         store.subscribe(sub2);
 
         // when
-        store.dispatch.set('foo');
+        dispatcher.set('foo');
 
         // then
         expect(sub1).toBeCalledWith({ value: 'foo' });

@@ -1,40 +1,45 @@
-import { BaseState } from './StateStore';
-import { SideEffectThunk } from './sideEffects';
+import { SideEffectInstance } from './sideEffects';
 
-export type BaseAppEvents = {
-    [eventName: string]: (...args: any) => any;
+export type BaseState = {
+    [key: PropertyKey]: any;
 };
 
-type SideEffectTypeForEventName<
-    AppEvents extends BaseAppEvents,
-    eventName extends keyof AppEvents,
-> = SideEffectThunk<
-    Parameters<ReturnType<ReturnType<AppEvents[eventName]>>>,
-    ReturnType<ReturnType<ReturnType<AppEvents[eventName]>>>,
-    AppEvents
+// I cannot reference the actual side effects type in the Transitions type
+// because it creates a circular type dependency between them.
+// Therefore, I only have this opaque type here to ensure that
+// whatever is being returned from a transition has the shape of a side effect.
+// It's a very specific shape anyway so it'll probably catch wrong invocations.
+export type OpaqueSideEffectType<State extends BaseState> = SideEffectInstance<
+    Array<unknown>,
+    void | Array<unknown>,
+    State
 >;
 
-type TransitionTypeForEventName<
-    State extends BaseState,
-    AppEvents extends BaseAppEvents,
-    eventName extends keyof AppEvents,
-> = (
-    ...payload: Parameters<AppEvents[eventName]>
-) => (state: State) => void | SideEffectTypeForEventName<AppEvents, eventName>;
+export type Transition<Args extends Array<any>, State extends BaseState> = (
+    ...args: Args
+) => (state: State) => void | OpaqueSideEffectType<State>;
 
-export type Transitions<State extends BaseState, AppEvents extends BaseAppEvents> = {
-    [eventName in keyof AppEvents]: TransitionTypeForEventName<State, AppEvents, eventName>;
-};
+type MustBeOpaqueSideEffectOrVoid<T, State extends BaseState> = T extends OpaqueSideEffectType<State>
+    ? T
+    : T extends void
+    ? T
+    : never;
 
-export type TransitionInput<State extends BaseState> = (...args: Array<any>) => (state: State) => any;
-
-export function createTransitions<State extends BaseState>() {
-    return function <KeyType extends PropertyKey>(obj: Record<KeyType, TransitionInput<State>>) {
-        return {
-            ...obj,
-            noop: () => () => {},
-        };
+export function createTransition<State extends BaseState>() {
+    return function <Args extends Array<any>, Return>(
+        input: (...args: Args) => (state: State) => MustBeOpaqueSideEffectOrVoid<Return, State>,
+    ) {
+        return input;
     };
 }
 
-export const createLogic = createTransitions;
+export function createTransitions<State extends BaseState>() {
+    return function <InputsType extends Record<PropertyKey, Transition<any, State>>>(inputs: InputsType) {
+        const transitions = {} as typeof inputs;
+        for (const key of Object.keys(inputs) as Array<keyof typeof inputs>) {
+            // @ts-ignore
+            transitions[key] = createTransition<State>()(inputs[key]);
+        }
+        return transitions;
+    };
+}

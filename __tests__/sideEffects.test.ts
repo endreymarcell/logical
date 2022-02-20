@@ -1,4 +1,5 @@
-import { createTransitions, Store } from '../src';
+import { Store } from '../src';
+import { createTransitions } from '../src/transitions';
 import { createSideEffectInstanceCreators } from '../src/sideEffects';
 
 describe('side effect', () => {

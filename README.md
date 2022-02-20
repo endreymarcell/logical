@@ -1,32 +1,25 @@
 # logical.ts
 
-__Predictable and Expressive State Management for TypeScript__
+__Predictable yet Expressive State Management for TypeScript Applications__
 
-The basic pattern is based on [redux](https://redux.js.org/) with [Immer](https://immerjs.github.io/immer/) (so like the [redux-toolkit](https://redux-toolkit.js.org/)). Side-effects mostly resemble [redux-loop](https://redux-loop.js.org/), itself based on [Elm](https://elm-lang.org/), but with a custom layer of helpers originally authored by [@laszlopandy](https://github.com/laszlopandy) (not released publicly). 
+⚠️ logical.ts is in ALPHA stage, use at your own risk.
 
-⚠️ This is as WIP as it gets, don't even think about using it in production!
+## Docs
 
-## Usage
-
-### Simple state transitions
-
-#### Definitions
-
+First, define what your application state looks like.
 ```typescript
-// Define the shape of your application state...
 type State = {
     count: number;
 }
 
-// ...along with your initial state.
 const initialState: State = {
     count: 0,
 }
+```
 
-// Describe the events that can happen - these are like redux 'actions'
-// (these can take 0, 1, or more arguments, and should return void)
-// and the state transitions that follow them
-// (these look like: payload => state => { modify the state here, do not return anything })
+Then, list all the events that can happen in your app, and how they change the state.  
+(If you're coming from redux, these are your actions and your reducer in one.)
+```typescript
 const logic = createLogic<State>()({
     increase: (amount: number) => state => void (state.count += amount),
     decrease: (amount: number) => state => void (state.count -= amount),
@@ -34,80 +27,112 @@ const logic = createLogic<State>()({
     multiplyThenAdd: (mult: number, add: number) => state => void (state.count = state.count * mult + add),
 });
 ```
-
-#### Usage
+🤔 __What's with the `void`?__  
+It ensures that the assignment following it does not return a value. You could also wrap the assignment in curly braces if you prefer:  
 ```typescript
-// Create your store...
-const store = new Store(initialState, logic);
+const logic = createLogic<State>()({
+    increase: (amount: number) => state => {
+        state.count += amount;  
+    }, 
+    // ...
+});
+```
 
-// ...and subscribe to its changes...
-store.subscribe(newValue => console.log(`The latest store value is ${newValue}`));
+Finally, create your store and start dispatching events.
 
-// ...or grab the contents directly.
-console.log(`The value of the store is: ${store.get()}`);
+```typescript
+const store = new Store<State>(initialState);
+const dispatcher = store.getDispatcher()(logic);
 
-// Dispatch events by calling them on the store's synthetic `dispatch` object:
-store.dispatch.increase(10);
+dispatcher.increase(10);
 console.log(store.get().count);    // 10
 
-store.dispatch.decrease(3);
+dispatcher.decrease(3);
 console.log(store.get().count);    // 7
 
-store.dispatch.multiplyThenAdd(3, 5);
+dispatcher.multiplyThenAdd(3, 5);
 console.log(store.get().count);    // 26
 
-store.dispatch.reset();
+dispatcher.reset();
 console.log(store.get().count);    // 0
 ```
 
-### Side effects
-
-#### Definitions
-
+Of course, you can also subscribe to the store's changes:
 ```typescript
-// Define your state as usual
+store.subscribe(newValue => console.log(`The latest store value is ${newValue}`));
+```
+
+This also means you can use it as a Svelte store:
+```html
+<script lang="ts">
+    import { store } from "./app.ts";
+</script>
+
+<div>The current count is: {$store.count}</div>
+```
+
+__What about side effects?__ ⚡️
+
+Right. Remember how you weren't supposed to return anything in your logic's event handlers? That's because with `logical.ts`, that is returned for side effects!  
+
+First, define your state as usual:
+```typescript
 type State = {
     value: number;
-    status: "initial" | "pending" | "error";
+    status: "initial" | "pending" | "finished" | `failed: ${string}`
 }
 
 const initialState: State = {
     value: 0,
     status: "initial",
 }
+```
 
-// Side effects can be triggered by returing them from transitions...
-const logic = createLogic<State>()({
-    fetchValue: () => state => {
-        state.status = "pending";
-        return sideEffects.fetchValue();
-    },
-    success: (value: number) => state => {
-        state.value = value;
-        state.status = "initial";
-    },
-    failure: () => state => void (state.status = "error"),
-});
-
-// ...and need to be defined as functions that take 0, 1, or more arguments, return a Promise,
-// and specify a success and a failure event to be triggered on resolution/rejection.
-const sideEffects = createSideEffects(logic, {
-    fetchValue: [
+Then describe your side effects, along with their success and failure event handlers:
+```typescript
+const sideEffects = createSideEffects<State>()({
+    // Each side effect consists of...
+    fetchRandomNumber: [
+        // a function returning a promise,
         () => fetch('https://www.randomnumberapi.com/api/v1.0/random/')
             .then(response => response.json())
             .then(results => results[0]),
-        logic.success,
-        logic.failure,
+
+        // a success event handler, and
+        randomNumber => state => {
+            state.value = randomNumber;
+            state.status = "finished";
+        },
+
+        // a failure event handler.
+        exception => state => void (state.status = `failed: ${exception.message}`),
     ],
 });
 ```
 
-#### Usage
-
+You can trigger the side effect by returning it from an event handler:
 ```typescript
-const store = new Store(initialState, logic);
+const logic = createLogic<State>()({
+    onButtonClicked: () => state => {
+        state.status = "pending";
+        return sideEffects.fetchRandomNumber();
+    },
+});
+```
+
+Make sure to pass your side effects to `getDispatcher()`:
+```typescript
+const dispatcher = store.getDispatcher()(logic, sideEffects);
+button.addEventListener('click', () => dispatcher.onButtonClicked());
+```
+
+You can even await the dispatching of events that run side effects:
+```typescript
+const store = new Store(initialState);
 console.log(store.get().value);      // 0
 
-await store.dispatch.fetchValue();   // you can await events if they trigger a side-effect
+const dispatcher = store.getDispatcher()(logic, sideEffects);
+
+await dispatcher.onButtonClicked();
 console.log(store.get().value);      // 42 if I am really lucky
 ```

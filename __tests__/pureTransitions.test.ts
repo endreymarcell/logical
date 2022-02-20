@@ -1,4 +1,4 @@
-import { createTransitions } from '../src';
+import { createTransitions } from '../src/transitions';
 import { Store } from '../src';
 
 describe('pure transitions', () => {

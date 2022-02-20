@@ -2,9 +2,10 @@
   "name": "logical.ts",
   "version": "0.1.0",
   "description": "Logical state management for TypeScript applications",
-  "main": "src/index.js",
+  "main": "dist/index.js",
+  "files": ["dist"],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -p tsconfig-build.json",
     "format": "prettier -w src/**/*",
     "test": "npm run test:types && npm run test:functions",
     "test:types": "tsc --noEmit",

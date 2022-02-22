@@ -3,14 +3,21 @@
   "version": "0.1.1",
   "description": "Logical state management for TypeScript applications",
   "type": "module",
-  "main": "dist/index.js",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "files": [
     "dist"
   ],
-  "exports": "./dist/index.js",
-  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsc -p tsconfig-build.json",
+    "build": "tsup src/index.ts --dts --format esm,cjs",
     "format": "prettier -w src/**/*",
     "test": "npm run test:types && npm run test:functions",
     "test:types": "tsc --noEmit",

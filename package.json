@@ -1,6 +1,6 @@
 {
   "name": "@endreymarcell/logical.ts",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Logical state management for TypeScript applications",
   "type": "module",
   "main": "./dist/index.js",

@@ -21,7 +21,7 @@
     "format": "prettier -w src/**/*",
     "test": "npm run test:types && npm run test:functions",
     "test:types": "tsc --noEmit",
-    "test:functions": "jest __tests__/*"
+    "test:functions": "jest tests/functions"
   },
   "repository": {
     "type": "git",

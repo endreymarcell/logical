@@ -1,4 +1,4 @@
-import { createTransition, createTransitions, OpaqueSideEffectType } from './transitions';
+import { createTransition, createTransitions, OpaqueSideEffectType } from '../../src/transitions';
 
 createTransition: {
     // OK: everything is empty

@@ -1,5 +1,5 @@
-import { createTransitions } from './transitions';
-import { Store } from './Store';
+import { createTransitions } from '../../src/transitions';
+import { Store } from '../../src/Store';
 
 initialStateMatching: {
     // OK: empty

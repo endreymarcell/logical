@@ -23,7 +23,8 @@
     "format": "prettier -w src/**/*",
     "test": "npm run test:types && npm run test:functions",
     "test:types": "tsc --noEmit",
-    "test:functions": "jest tests/functions"
+    "test:functions": "jest tests/functions",
+    "publish": "npm publish --access public"
   },
   "repository": {
     "type": "git",

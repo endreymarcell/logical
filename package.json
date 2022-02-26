@@ -3,11 +3,11 @@
   "version": "0.1.4",
   "description": "Logical state management for TypeScript applications",
   "type": "module",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
   "files": [
     "dist"
   ],
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
   "exports": {
     ".": {
       "require": "./dist/cjs/index.js",

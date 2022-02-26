@@ -1,8 +1,8 @@
-# logical.ts
+# logical
 
 __Predictable yet Expressive State Management for TypeScript Applications__
 
-⚠️ logical.ts is in ALPHA stage, use at your own risk.
+⚠️ logical is in ALPHA stage, use at your own risk.
 
 ## Docs
 
@@ -73,7 +73,7 @@ This also means you can use it as a Svelte store:
 
 __What about side effects?__ ⚡️
 
-Right. Remember how you weren't supposed to return anything in your logic's event handlers? That's because with `logical.ts`, that is returned for side effects!  
+Right. Remember how you weren't supposed to return anything in your logic's event handlers? That's because with `logical`, that is returned for side effects!  
 
 First, define your state as usual:
 ```typescript

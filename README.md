@@ -30,7 +30,8 @@ const logic = createLogic<State>()({
 });
 ```
 
-🤔 **What's with the `void`?**  
+<details>
+<summary>🤔 What's the deal with the `void` prefix?</summary>
 It ensures that the assignment following it does not return a value. You could also wrap the assignment in curly braces if you prefer:
 
 ```typescript
@@ -41,6 +42,9 @@ const logic = createLogic<State>()({
     // ...
 });
 ```
+
+</details>
+<br/>
 
 Finally, create your store and start dispatching events.
 

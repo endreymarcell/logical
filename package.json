@@ -13,7 +13,7 @@
         "import": "./dist/esm/index.js",
         "types": "./dist/types/index.d.ts"
     },
-    "types": "./dist/index.d.ts",
+    "types": "./dist/types/index.d.ts",
     "scripts": {
         "build": "npm run build:types && npm run build:cjs && npm run build:esm",
         "build:cjs": "tsc -p config/tsconfig-build-cjs.json",

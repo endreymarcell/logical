@@ -9,17 +9,16 @@
     "main": "./dist/cjs/index.js",
     "module": "./dist/esm/index.js",
     "exports": {
-        ".": {
-            "require": "./dist/cjs/index.js",
-            "import": "./dist/esm/index.js",
-            "types": "./dist/esm/index.d.ts"
-        }
+        "require": "./dist/cjs/index.js",
+        "import": "./dist/esm/index.js",
+        "types": "./dist/types/index.d.ts"
     },
     "types": "./dist/index.d.ts",
     "scripts": {
-        "build": "npm run build:cjs && npm run build:esm",
+        "build": "npm run build:types && npm run build:cjs && npm run build:esm",
         "build:cjs": "tsc -p config/tsconfig-build-cjs.json",
         "build:esm": "tsc -p config/tsconfig-build-esm.json",
+        "build:types": "tsc -p config/tsconfig-build-types.json",
         "format": "prettier -w src/**/*",
         "test": "npm run test:types && npm run test:functions",
         "test:types": "tsc --noEmit",

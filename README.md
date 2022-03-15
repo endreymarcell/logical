@@ -31,7 +31,7 @@ const logic = createLogic<State>()({
 ```
 
 <details>
-<summary>🤔 What's the deal with the `void` prefix?</summary>
+<summary>Why the deal with the `void` prefix?</summary>
 It ensures that the assignment following it does not return a value. You could also wrap the assignment in curly braces if you prefer:
 
 ```typescript
@@ -43,6 +43,12 @@ const logic = createLogic<State>()({
 });
 ```
 
+</details>
+<br/>
+
+<details>
+<summary>Why the double parentheses?</summary>
+That's the only way I could get TypeScript to properly infer but not constrain the type you're passing to `createLogic()` here (ie. 'partial type argument inference'). See https://stackoverflow.com/questions/62490272/how-can-i-have-typescript-infer-the-value-for-a-constrained-generic-type-when-sp for example.
 </details>
 <br/>
 

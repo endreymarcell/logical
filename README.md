@@ -79,7 +79,7 @@ This also means you can use it as a Svelte store:
 
 **What about side effects?** ⚡️
 
-Right. Remember how you weren't supposed to return anything in your logic's event handlers? That's because with `logical`, that is returned for side effects!
+Right. Remember how you weren't supposed to return anything in your logic's event handlers? That's because with `logical`, that is reserved for side effects!
 
 First, define your state as usual:
 
@@ -107,13 +107,13 @@ const sideEffects = createSideEffects<State>()({
                 .then(response => response.json())
                 .then(results => results[0]),
 
-        // a success event handler, and
+        // a success event handler,
         randomNumber => state => {
             state.value = randomNumber;
             state.status = 'finished';
         },
 
-        // a failure event handler.
+        // and a failure event handler.
         exception => state => void (state.status = `failed: ${exception.message}`),
     ],
 });

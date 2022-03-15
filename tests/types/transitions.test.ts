@@ -28,56 +28,56 @@ createTransitions: {
     createTransitions<{}>()({});
 
     // OK: accessing existing properties with the correct payloads
-    const t1 = createTransitions<{ count: number }>()({
+    const t = createTransitions<{ count: number }>()({
         plus: (amount: number) => state => void (state.count += amount),
         reset: () => state => void (state.count = 0),
     });
-    t1.plus(10);
-    t1.reset();
+    t.plus(10);
+    t.reset();
 
     // Error: accessing non-existent property
     // @ts-expect-error
-    t1.noSuchProperty();
+    t.noSuchProperty();
 
     // Error: missing argument
     // @ts-expect-error
-    t1.plus();
+    t.plus();
 
     // Error: wrong number of arguments
     // @ts-expect-error
-    t1.plus(1, 2);
+    t.plus(1, 2);
 
     // Error: wrong argument type
     // @ts-expect-error
-    t1.plus('foobar');
+    t.plus('foobar');
 }
 
 createTransitionsWithoutHelper: {
     // OK: accessing existing properties with the correct payloads
-    const t2 = {
+    const t = {
         plus: createTransition<{ count: number }>()(
             (amount: number) => state => void (state.count += amount),
         ),
         reset: createTransition<{ count: number }>()(() => state => void (state.count = 0)),
     };
-    t2.plus(10);
-    t2.reset();
+    t.plus(10);
+    t.reset();
 
     // Error: accessing non-existent property
     // @ts-expect-error
-    t2.noSuchProperty();
+    t.noSuchProperty();
 
     // Error: missing argument
     // @ts-expect-error
-    t2.plus();
+    t.plus();
 
     // Error: wrong number of arguments
     // @ts-expect-error
-    t2.plus(1, 2);
+    t.plus(1, 2);
 
     // Error: wrong argument type
     // @ts-expect-error
-    t2.plus('foobar');
+    t.plus('foobar');
 }
 
 opaqueSideEffectType: {

@@ -20,53 +20,63 @@ initialStateMatching: {
 
 stateTypeMatching: {
     // OK: matching state type
-    const s1 = new Store<{ count: number }>({ count: 0 });
-    const t1 = createTransitions<{ count: number }>()({});
-    s1.getDispatcher()(t1);
+    {
+        const s = new Store<{ count: number }>({ count: 0 });
+        const t = createTransitions<{ count: number }>()({});
+        s.getDispatcher()(t);
+    }
 
     // Error: wrong property type
-    const s2 = new Store<{ count: string }>({ count: 'zero' });
-    const t2 = createTransitions<{ count: number }>()({
-        plus: (amount: number) => state => void (state.count += amount),
-    });
-    // @ts-expect-error
-    s2.getDispatcher()(t2);
+    {
+        const s = new Store<{ count: string }>({ count: 'zero' });
+        const t = createTransitions<{ count: number }>()({
+            plus: (amount: number) => state => void (state.count += amount),
+        });
+        // @ts-expect-error
+        s.getDispatcher()(t);
+    }
 
     // Error: transition has a property that is missing from the store's state
-    const s3 = new Store<{}>({});
-    const t3 = createTransitions<{ count: number }>()({
-        plus: (amount: number) => state => void (state.count += amount),
-    });
-    // @ts-expect-error
-    s3.getDispatcher()(t3);
+    {
+        const s = new Store<{}>({});
+        const t = createTransitions<{ count: number }>()({
+            plus: (amount: number) => state => void (state.count += amount),
+        });
+        // @ts-expect-error
+        s.getDispatcher()(t);
+    }
 
     // Error: the store's state has a property that's missing from the transition
-    const s4 = new Store<{ count: number }>({ count: 0 });
-    const t4 = createTransitions<{}>()({
-        plus: () => state => {
-            console.log({ state });
-        },
-    });
-    // // @ts-expect-error
-    s4.getDispatcher()(t4);
-    // TODO do I need to make this one fail?
+    {
+        const s = new Store<{ count: number }>({ count: 0 });
+        const t = createTransitions<{}>()({
+            plus: () => state => {
+                console.log({ state });
+            },
+        });
+        // // @ts-expect-error
+        s.getDispatcher()(t);
+        // TODO do I need to make this one fail?
+    }
 
     // Error: the store and the transition have a different property each
-    const s5 = new Store<{ count: number }>({ count: 0 });
-    const t5 = createTransitions<{ value: string }>()({
-        set: (newValue: string) => state => void (state.value = newValue),
-    });
-    // @ts-expect-error
-    s5.getDispatcher()(t5);
+    {
+        const s = new Store<{ count: number }>({ count: 0 });
+        const t = createTransitions<{ value: string }>()({
+            set: (newValue: string) => state => void (state.value = newValue),
+        });
+        // @ts-expect-error
+        s.getDispatcher()(t);
+    }
 }
 
 dispatchType: {
-    const s1 = new Store<{ count: number }>({ count: 0 });
-    const t1 = createTransitions<{ count: number }>()({
+    const s = new Store<{ count: number }>({ count: 0 });
+    const t = createTransitions<{ count: number }>()({
         plus: (amount: number) => state => void (state.count += amount),
         reset: () => state => void (state.count = 0),
     });
-    const d = s1.getDispatcher()(t1);
+    const d = s.getDispatcher()(t);
 
     // OK: no payload
     d.reset();

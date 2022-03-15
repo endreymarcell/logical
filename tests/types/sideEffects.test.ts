@@ -40,24 +40,28 @@ createSideEffectInstance: {
 
 sideEffectInstance: {
     // OK: no params
-    const e1 = createSideEffectInstanceCreator<{}>()('name', [() => Promise.resolve(), noop, noop]);
-    e1();
+    {
+        const e = createSideEffectInstanceCreator<{}>()('name', [() => Promise.resolve(), noop, noop]);
+        e();
+    }
 
-    // OK: matching param
-    const e2 = createSideEffectInstanceCreator<{}>()('name', [
-        (count: number) => Promise.resolve(count),
-        noop,
-        noop,
-    ]);
-    e2(99);
+    {
+        // OK: matching param
+        const e = createSideEffectInstanceCreator<{}>()('name', [
+            (count: number) => Promise.resolve(count),
+            noop,
+            noop,
+        ]);
+        e(99);
 
-    // Error: non-matching param
-    // @ts-expect-error
-    e2('foobar');
+        // Error: non-matching param
+        // @ts-expect-error
+        e('foobar');
 
-    // Error: missing param
-    // @ts-expect-error
-    e2();
+        // Error: missing param
+        // @ts-expect-error
+        e();
+    }
 }
 
 createSideEffects: {

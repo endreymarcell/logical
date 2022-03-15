@@ -1,8 +1,8 @@
 {
-  "extends": "../tsconfig.json",
-  "compilerOptions": {
-    "declaration": true,
-    "esModuleInterop": true
-  },
-  "include": ["../src/*.ts"]
+    "extends": "../tsconfig.json",
+    "compilerOptions": {
+        "declaration": true,
+        "esModuleInterop": true
+    },
+    "include": ["../src/*.ts"]
 }

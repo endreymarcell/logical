@@ -14,11 +14,23 @@ export abstract class BaseStore<ValueType> {
     }
 
     subscribe(subscriber: Subscriber<ValueType>) {
-        this.subscribers.push(subscriber);
+        this.addSubscriber(subscriber);
         subscriber(this.value);
+        return () => this.removeSubscriber(subscriber);
     }
 
     protected broadcast() {
         this.subscribers.forEach(subscriber => subscriber(this.value));
+    }
+
+    private addSubscriber(subscriber: Subscriber<ValueType>) {
+        this.subscribers.push(subscriber);
+    }
+
+    private removeSubscriber(subscriber: Subscriber<ValueType>) {
+        const subscriberIndex = this.subscribers.findIndex(item => item === subscriber);
+        if (subscriberIndex !== -1) {
+            this.subscribers.splice(subscriberIndex, 1);
+        }
     }
 }

@@ -40,4 +40,28 @@ describe('subscription', () => {
         expect(sub1).toBeCalledWith({ value: 'foo' });
         expect(sub2).toBeCalledWith({ value: 'foo' });
     });
+
+    test('unsubbing', () => {
+        const store = new Store({ value: '' });
+        const dispatcher = store.getDispatcher()(transitions);
+
+        // mock function has no calls initially
+        const sub = jest.fn();
+        expect(sub).toBeCalledTimes(0);
+
+        // subscribing calls the function immediately, call count is 1
+        const unsubscribe = store.subscribe(sub);
+        expect(sub).toBeCalledTimes(1);
+
+        // dispatching an event calls the subscription again, call count is 2
+        dispatcher.set('foo');
+        expect(sub).toBeCalledTimes(2);
+
+        // however, after unsubbing...
+        unsubscribe();
+
+        // further events do not increase the call count
+        dispatcher.set('will not see this');
+        expect(sub).toBeCalledTimes(2);
+    });
 });

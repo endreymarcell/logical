@@ -2,7 +2,7 @@
 
 **Predictable yet Expressive State Management for TypeScript Applications**
 
-⚠️ logical is in ALPHA stage, use at your own risk.
+⚠️ logical is in BETA, use at your own risk.
 
 ## Docs
 
@@ -31,7 +31,7 @@ const logic = createLogic<State>()({
 ```
 
 <details>
-<summary>Why the deal with the `void` prefix?</summary>
+<summary>What's the deal with the `void` prefix?</summary>
 It ensures that the assignment following it does not return a value. You could also wrap the assignment in curly braces if you prefer:
 
 ```typescript
@@ -44,7 +44,6 @@ const logic = createLogic<State>()({
 ```
 
 </details>
-<br/>
 
 <details>
 <summary>Why the double parentheses?</summary>
@@ -158,3 +157,7 @@ const dispatcher = store.getDispatcher()(logic, sideEffects);
 await dispatcher.onButtonClicked();
 console.log(store.get().value); // 42 if I am really lucky
 ```
+
+## Notes
+
+I am test-driving `logical` in my pet project [10queue](https://github.com/endreymarcell/10queue). Check out [the code](https://github.com/endreymarcell/10queue/blob/master/src/app/logic/appLogic.ts) to get a feel for the usage.

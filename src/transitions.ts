@@ -43,3 +43,5 @@ export function createTransitions<State extends BaseState>() {
         return transitions;
     };
 }
+
+export const noop = () => () => {};

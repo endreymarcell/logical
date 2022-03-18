@@ -1,6 +1,6 @@
 import { createSideEffectInstanceCreator, createSideEffectInstanceCreators } from '../../src/sideEffects';
+import { noop } from '../../src/transitions';
 
-const noop = () => () => {};
 const sum = (nums: Array<number>) => nums.reduce((a, b) => a + b, 0);
 
 createSideEffectInstance: {

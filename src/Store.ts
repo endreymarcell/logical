@@ -86,16 +86,15 @@ export class Store<ValueType> extends BaseStore<ValueType> {
                 // Update the state
                 const maybeSideEffect = updaterForGivenPayload(draftState as ValueType);
                 if (maybeSideEffect) {
-                    maybeSideEffects.push(maybeSideEffect);
+                    if (Array.isArray(maybeSideEffect)) {
+                        maybeSideEffects.push(...maybeSideEffect);
+                    } else {
+                        maybeSideEffects.push(maybeSideEffect);
+                    }
                 }
             });
             this.broadcast();
-
-            if (maybeSideEffects.length > 0) {
-                return this.executeSideEffect(maybeSideEffects[0]);
-            } else {
-                return Promise.resolve();
-            }
+            return Promise.allSettled(maybeSideEffects.map(sideEffect => this.executeSideEffect(sideEffect)));
         };
     }
 

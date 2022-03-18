@@ -94,4 +94,7 @@ opaqueSideEffectType: {
     // TODO: can I make it return a more helpful error message though?
     // @ts-expect-error
     createTransition<{}>()(() => () => 'foobar');
+
+    // OK: returning an array of opaque side effects
+    createTransition<{}>()(() => () => [s1, s1]);
 }

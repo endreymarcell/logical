@@ -15,19 +15,22 @@ export type OpaqueSideEffectType<State extends BaseState> = SideEffectInstance<
     State
 >;
 
+export type OneOrMoreOpaqueSideEffects<State extends BaseState> =
+    | OpaqueSideEffectType<State>
+    | Array<OpaqueSideEffectType<State>>;
+
 export type Transition<Args extends Array<any>, State extends BaseState> = (
     ...args: Args
-) => (state: State) => void | OpaqueSideEffectType<State>;
+) => (state: State) => void | OneOrMoreOpaqueSideEffects<State>;
 
-type MustBeOpaqueSideEffectOrVoid<T, State extends BaseState> = T extends OpaqueSideEffectType<State>
-    ? T
-    : T extends void
-    ? T
-    : never;
+type MustBeOneOrMoreOpaqueSideEffectsOrVoid<
+    T,
+    State extends BaseState,
+> = T extends OneOrMoreOpaqueSideEffects<State> ? T : T extends void ? T : never;
 
 export function createTransition<State extends BaseState>() {
     return function <Args extends Array<any>, Return>(
-        input: (...args: Args) => (state: State) => MustBeOpaqueSideEffectOrVoid<Return, State>,
+        input: (...args: Args) => (state: State) => MustBeOneOrMoreOpaqueSideEffectsOrVoid<Return, State>,
     ) {
         return input;
     };

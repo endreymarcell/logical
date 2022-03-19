@@ -158,6 +158,15 @@ await dispatcher.onButtonClicked();
 console.log(store.get().value); // 42 if I am really lucky
 ```
 
+Or return multiple side effects in an array:
+
+```typescript
+const logic = createLogic<State>()({
+    init: () => () => [sideEffects.attachEventListeners(), sideEffects.setupAutosave()],
+    // ...
+});
+```
+
 ## Notes
 
 I am test-driving `logical` in my pet project [10queue](https://github.com/endreymarcell/10queue). Check out [the code](https://github.com/endreymarcell/10queue/blob/master/src/app/logic/appLogic.ts) to get a feel for the usage.

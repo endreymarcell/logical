@@ -3,12 +3,26 @@ import type { OpaqueSideEffectType, Transition } from './transitions';
 import produce from 'immer';
 import { SideEffectInstanceCreator } from './sideEffects';
 
+type LogLevel = 'silent' | 'debug';
+
+interface StoreOptions {
+    logLevel: LogLevel;
+}
+
 export class Store<ValueType> extends BaseStore<ValueType> {
     private localCopyOfTransitions: Record<PropertyKey, any>;
+    private logLevel: LogLevel;
 
-    constructor(initialValue: ValueType) {
+    constructor(initialValue: ValueType, options?: StoreOptions) {
         super(initialValue);
         this.localCopyOfTransitions = {};
+        this.logLevel = options?.logLevel ?? 'silent';
+    }
+
+    private log(...message: Array<string>) {
+        if (this.logLevel === 'debug') {
+            console.log(...message);
+        }
     }
 
     public getDispatcher() {
@@ -93,6 +107,14 @@ export class Store<ValueType> extends BaseStore<ValueType> {
                     }
                 }
             });
+
+            const eventLog = `logical/event: ${transition.name}(${payload.join(', ')})`;
+            const sideEffectsLog =
+                maybeSideEffects.length > 0
+                    ? `logical/sideEffects: ${maybeSideEffects.map(effect => effect.name).join(', ')}`
+                    : undefined;
+            this.log(eventLog, sideEffectsLog !== undefined ? `-> ${sideEffectsLog}` : '');
+
             this.broadcast();
             return Promise.allSettled(maybeSideEffects.map(sideEffect => this.executeSideEffect(sideEffect)));
         };
@@ -103,6 +125,7 @@ export class Store<ValueType> extends BaseStore<ValueType> {
             args,
             blueprint: [execute],
         } = sideEffect;
+        this.log(`logical/sideEffect: ${String(sideEffect.name)}(${args.join(', ')})`);
         return execute(...args)
             .then(result => this.localCopyOfTransitions[String(sideEffect.name) + 'Success'](result))
             .catch(problem => this.localCopyOfTransitions[String(sideEffect.name) + 'Failure'](problem));
